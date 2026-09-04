@@ -116,19 +116,18 @@ class SpatialkNNGraphBuilder(BaseGraphBuilder):
                         edges.add(rev_edge)
                         edge_weights_dict[rev_edge] = d
 
-                    if part_id == 0:
-                        num_tr_tr += 1
-                    elif part_id == 1:
-                        num_va_va += 1
-                    else:
-                        num_te_te += 1
-
         if not edges:
             edge_index = torch.empty((2, 0), dtype=torch.long)
             edge_weight_tensor = None
+            num_tr_tr = 0
+            num_va_va = 0
+            num_te_te = 0
         else:
             edge_list = sorted(edges)
             edge_index = torch.tensor(edge_list, dtype=torch.long).t().contiguous()
+            num_tr_tr = sum(1 for src, _ in edges if partitions[src] == 0)
+            num_va_va = sum(1 for src, _ in edges if partitions[src] == 1)
+            num_te_te = sum(1 for src, _ in edges if partitions[src] == 2)
 
             if weighting == EdgeWeightingMode.UNWEIGHTED:
                 edge_weight_tensor = torch.ones(len(edge_list), dtype=torch.float32)

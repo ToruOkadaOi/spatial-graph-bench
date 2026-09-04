@@ -13,7 +13,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy import sparse
-from scripts.validate_construction import validate_graph_construction
 from scripts.validate_split import validate_split_file
 
 from spatial_graph_bench.analysis.delivery import AuditVerdict, audit_run_dir
@@ -30,6 +29,7 @@ from spatial_graph_bench.config.preprocessing import (
     PreprocessingPipelineVersion,
 )
 from spatial_graph_bench.config.split import SplitConfig, SplitHierarchy
+from spatial_graph_bench.graph.audit import validate_graph_construction
 from spatial_graph_bench.graph.spatial_knn import SpatialkNNGraphBuilder
 from spatial_graph_bench.models.trainer import run_benchmark_training
 from spatial_graph_bench.preprocessing.audit import verify_spatial_ignorance

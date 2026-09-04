@@ -12,7 +12,7 @@ This document tracks execution progress, gate outcomes, and test coverage across
 | **1** | Scaffolding, Pre-Registration, CI, Porting | **COMPLETED** | CI green on fixture, protocol commit hash recorded, reference clone destroyed | CI green (16/16 tests pass), commit `449a4d4` recorded, reference clone destroyed. |
 | **2** | Split Protocol & Disjointness Validators | **COMPLETED** | `validate_split.py` green on all datasets | Canonical mouse-held-out (`00408e4741f5`) & spatial-block splits generated & validated. |
 | **3** | Feature Pipelines A/B & Spatial Ignorance Audit | **COMPLETED** | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default); shuffle audit passed (max diff 0.0); MERFISH manifests issued. |
-| **4** | Graph Constructions, Controls & Validators | PENDING | Construction manifests chained, connectivity verified per variant | Spatial k-NN, rewired & shuffled controls, section-own topology. |
+| **4** | Graph Constructions, Controls & Validators | **COMPLETED** | Construction manifests chained, connectivity verified per variant | Spatial k-NN (k=6, 12), rewired & shuffled controls, Variant A bipartite; 0 cross-partition, 0 cross-section edges. |
 | **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | PENDING | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned spatially ignorant models on train partitions only. |
 | **6** | GNN Sweeps on GPU via Handoff & Ingestion | PENDING | All runs PASS or quarantined with notes | Audited delivery with 4-layer verification. |
 | **7** | Post-Hoc Analysis & Anti-Circularity Audit | PENDING | Circular metrics demoted per §3.3 | Matched lift, TOST equivalence test, boundary stratification. |
@@ -62,3 +62,23 @@ This document tracks execution progress, gate outcomes, and test coverage across
 - [x] `scripts/run_preprocessing.py` implemented.
 - [x] Coordinate-shuffle audit passed (max diff 0.0 <= 1e-6).
 - [x] Version A feature manifests and bundles issued for MERFISH canonical and block splits.
+
+---
+
+## Phase 4 Execution Checklist
+
+- [x] `src/spatial_graph_bench/graph/spatial_knn.py` implemented with strict section-own grouping.
+- [x] `src/spatial_graph_bench/graph/rewired_control.py` implemented (degree-preserving swaps within section & partition).
+- [x] `src/spatial_graph_bench/graph/coordinate_shuffle.py` implemented.
+- [x] `src/spatial_graph_bench/graph/bipartite.py` implemented (Variant A scgraph-bench v0 semantics).
+- [x] `src/spatial_graph_bench/graph/audit.py` and `scripts/validate_construction.py` implemented.
+- [x] `scripts/build_spatial_graphs.py` implemented.
+- [x] Built and validated 7 graph bundles for MERFISH `mouse_held_out_canonical`:
+  - `spatial_knn_k6` (290,052 edges, 0 cross-partition/cross-section)
+  - `rewired_spatial_knn_k6` (290,052 edges, 0 cross-partition/cross-section)
+  - `shuffled_spatial_knn_k6` (299,472 edges, 0 cross-partition/cross-section)
+  - `spatial_knn_k12` (565,698 edges, 0 cross-partition/cross-section)
+  - `rewired_spatial_knn_k12` (565,698 edges, 0 cross-partition/cross-section)
+  - `shuffled_spatial_knn_k12` (584,424 edges, 0 cross-partition/cross-section)
+  - `bipartite_ref_k20` (1,256,355 edges, 0 query-query edges)
+- [x] Built and validated 7 graph bundles for MERFISH `spatial_block_exploratory`.
