@@ -20,9 +20,36 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from rich.console import Console
 from rich.table import Table
 
-from spatial_graph_bench.utils.paths import ArtifactPaths
+from spatial_graph_bench.utils.paths import ArtifactPaths, get_project_root
 
 console = Console()
+
+
+def get_default_repo() -> str:
+    """Resolve GitHub repository owner/repo identifier."""
+    import os
+
+    if env_repo := os.getenv("SPATIAL_GRAPH_BENCH_REPO"):
+        return env_repo
+    try:
+        res = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            cwd=get_project_root(),
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            url = res.stdout.strip()
+            if ":" in url and not url.startswith("http"):
+                part = url.split(":", 1)[1]
+            else:
+                part = url.split("github.com/", 1)[-1]
+            if part.endswith(".git"):
+                part = part[:-4]
+            return part
+    except Exception:
+        pass
+    return "ToruOkadaOi/spatial-graph-bench"
 
 
 def compute_sha256(filepath: Path) -> str:
@@ -158,6 +185,7 @@ def publish_release(
     checksums_path: Path,
     dataset_name: str,
     split_id: str,
+    repo: str | None = None,
     title: str | None = None,
     notes: str | None = None,
 ) -> None:
@@ -165,6 +193,7 @@ def publish_release(
     if not shutil.which("gh"):
         raise RuntimeError("GitHub CLI ('gh') is not installed or not on PATH.")
 
+    target_repo = repo or get_default_repo()
     release_title = title or f"Artifact Bundle: {dataset_name} ({split_id}) [{tag}]"
     release_notes = notes or generate_default_notes(
         tag=tag,
@@ -174,7 +203,9 @@ def publish_release(
         checksums_path=checksums_path,
     )
 
-    console.print(f"[bold cyan]Publishing release [yellow]{tag}[/yellow] to GitHub...[/bold cyan]")
+    console.print(
+        f"[bold cyan]Publishing release [yellow]{tag}[/yellow] to GitHub ({target_repo})...[/bold cyan]"
+    )
     cmd = [
         "gh",
         "release",
@@ -182,6 +213,8 @@ def publish_release(
         tag,
         str(archive_path),
         str(checksums_path),
+        "--repo",
+        target_repo,
         "--title",
         release_title,
         "--notes",
@@ -200,6 +233,7 @@ def publish_release(
 def fetch_release(
     tag: str,
     dest_dir: Path,
+    repo: str | None = None,
     unpack: bool = True,
     validate: bool = True,
     dataset_name: str | None = None,
@@ -209,10 +243,13 @@ def fetch_release(
     if not shutil.which("gh"):
         raise RuntimeError("GitHub CLI ('gh') is not installed or not on PATH.")
 
+    target_repo = repo or get_default_repo()
     dest_dir.mkdir(parents=True, exist_ok=True)
-    console.print(f"[bold cyan]Fetching release {tag} into {dest_dir.resolve()}...[/bold cyan]")
+    console.print(
+        f"[bold cyan]Fetching release {tag} ({target_repo}) into {dest_dir.resolve()}...[/bold cyan]"
+    )
 
-    cmd = ["gh", "release", "download", tag, "--dir", str(dest_dir)]
+    cmd = ["gh", "release", "download", tag, "--repo", target_repo, "--dir", str(dest_dir)]
     res = subprocess.run(cmd, capture_output=True, text=True)
     if res.returncode != 0:
         console.print(f"[bold red]gh release download failed:[/bold red] {res.stderr}")
@@ -266,7 +303,7 @@ def fetch_release(
         for arc in archives:
             console.print(f"[cyan]Unpacking {arc.name}...[/cyan]")
             with tarfile.open(arc, "r:gz") as tar:
-                tar.extractall(dest_dir)
+                tar.extractall(dest_dir, filter="data")
             console.print(f"  [green]Successfully unpacked {arc.name}[/green]")
 
         if validate:
@@ -336,6 +373,7 @@ def main() -> None:
     p_pub.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
     p_pub.add_argument("--split", type=str, default="mouse_held_out_canonical")
     p_pub.add_argument("--out-dir", type=Path, default=Path("dist"))
+    p_pub.add_argument("--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)")
     p_pub.add_argument("--title", type=str, default=None)
     p_pub.add_argument("--notes", type=str, default=None)
 
@@ -343,6 +381,7 @@ def main() -> None:
     p_fetch = subparsers.add_parser("fetch", help="Download and verify release assets")
     p_fetch.add_argument("--tag", type=str, required=True, help="Git release tag to download")
     p_fetch.add_argument("--dest", type=Path, default=Path("."))
+    p_fetch.add_argument("--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)")
     p_fetch.add_argument("--no-unpack", action="store_true", default=False)
     p_fetch.add_argument("--no-validate", action="store_true", default=False)
     p_fetch.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
@@ -367,6 +406,7 @@ def main() -> None:
             checksums_path=cs_p,
             dataset_name=args.dataset,
             split_id=args.split,
+            repo=args.repo,
             title=args.title,
             notes=args.notes,
         )
@@ -374,6 +414,7 @@ def main() -> None:
         ok = fetch_release(
             tag=args.tag,
             dest_dir=args.dest,
+            repo=args.repo,
             unpack=not args.no_unpack,
             validate=not args.no_validate,
             dataset_name=args.dataset,
