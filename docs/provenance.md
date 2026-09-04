@@ -36,19 +36,29 @@ flowchart TD
         GraphBundle --> GraphManifest
     end
 
-    subgraph TrainingPhase ["5. Tuned Models & Evaluation"]
+    subgraph DistributionPhase ["5. Reproducibility Artifact Distribution"]
+        RelScript["scripts/manage_release_artifacts.py\n(Cryptographic SHA-256 signing, gh release)"]
+        GitHubRelease["GitHub Releases v0.1.0-*\n(16.09 MB verified input bundles)"]
+        WorkerFetch["GPU Worker Fetch & Invariant Check\n(scripts/validate_artifacts.py)"]
+        PrepBundle --> RelScript
+        GraphBundle --> RelScript
+        RelScript --> GitHubRelease
+        GitHubRelease --> WorkerFetch
+    end
+
+    subgraph TrainingPhase ["6. Tuned Models & Evaluation"]
         TrainBaselines["scripts/train_baselines.py\n(Tuned MLP, Random Forest)"]
         GPUSweep["GPU Worker Handoff\n(GCN, GraphSAGE, GAT, GIN)"]
         RunManifest["run_manifest.json\n(Parent graph_manifest_hash, feature_manifest_hash, seed)"]
         Results["artifacts/results/{dataset}/{split_id}/{run_id}/\n(metrics_summary.json, test_preds.npy, training_history.csv)"]
-        GraphBundle --> GPUSweep
+        WorkerFetch --> GPUSweep
         PrepBundle --> TrainBaselines
         TrainBaselines --> Results
         GPUSweep --> Results
         Results --> RunManifest
     end
 
-    subgraph VerificationPhase ["6. Delivery & Audit Ledger"]
+    subgraph VerificationPhase ["7. Delivery & Audit Ledger"]
         PackGPU["scripts/package_gpu_results.py\n(Pack-time audit, batch_manifest.json)"]
         RecvGPU["scripts/receive_gpu_delivery.py\n(4-layer verification, quarantine, ledger)"]
         IngestionLedger["audits/gpu_runs/ingestion_log.jsonl\n(Append-only cryptographically bound ledger)"]
@@ -59,7 +69,7 @@ flowchart TD
         Results --> BaselinesSnapshot
     end
 
-    subgraph ReportingPhase ["7. Analysis & Synthesis"]
+    subgraph ReportingPhase ["8. Analysis & Synthesis"]
         LiftCompute["scripts/compute_matched_lift.py\n(Matched F1 delta vs MLP, TOST equivalence)"]
         BoundaryAnalysis["scripts/stratify_boundary_lift.py\n(Interior vs. boundary-margin cells)"]
         Reports["docs/results-{dataset}.md\n(Generated from canonical tables)"]

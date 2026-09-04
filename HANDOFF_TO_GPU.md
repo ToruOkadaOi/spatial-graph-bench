@@ -72,20 +72,29 @@ uv run python scripts/package_gpu_results.py --dataset <dataset_id> --split <spl
 - **Commit SHA**: `b4c59e42aeac6f9e2205126048f1c8da286bd9e4`
 - **Lockfile SHA**: `4c1a3104f659b4f13cd99524bab75ea8bb0f82b556ff70dcddf8482dc6bd9cdf`
 
-#### 1. Transfer & Setup Commands
-Because frozen feature and graph arrays (`.npy`, `.pt`) are gitignored to avoid repository bloat, sync the directory (or clone + rsync `artifacts/`):
-```bash
-# From local CPU node to GPU worker:
-rsync -avz --exclude '.venv' --exclude '__pycache__' ./ <gpu_user>@<gpu_host>:~/spatial-graph-bench/
+#### 1. Setup & Artifact Retrieval Commands
+Frozen feature arrays and graph topologies are distributed and tracked via cryptographically verified GitHub Releases:
 
-# On GPU worker:
-cd ~/spatial-graph-bench
-git checkout b4c59e42aeac6f9e2205126048f1c8da286bd9e4
+```bash
+# 1. Clone repository on GPU worker
+git clone https://github.com/ToruOkadaOi/spatial-graph-bench.git
+cd spatial-graph-bench
 uv sync --frozen
+
+# 2. Fetch and unpack verified input artifacts
+uv run python scripts/manage_release_artifacts.py fetch --tag v0.1.0-merfish-inputs
+# Or manually using GitHub CLI / curl:
+# gh release download v0.1.0-merfish-inputs
+# shasum -a 256 -c sha256sums_merfish_mouse_spinal_cord_mouse_held_out_canonical.txt
+# tar -xzf artifacts_merfish_mouse_spinal_cord_mouse_held_out_canonical_inputs.tar.gz
+
+# 3. Verify CUDA device and environment
 uv run python -c "import torch; assert torch.cuda.is_available(), 'CUDA not available!'; print('CUDA device:', torch.cuda.get_device_name(0))"
 ```
 
 #### 2. Input Artifacts & Hashes (Pre-Run Verification)
+- Release Tag: `v0.1.0-merfish-inputs`
+- Input Bundle: `artifacts_merfish_mouse_spinal_cord_mouse_held_out_canonical_inputs.tar.gz` (SHA-256: `3f92e579fbc081cd17ea5d04d406f36c9dee1c20b06030584f3900abe8964e8b`)
 - Split JSON: `splits/merfish_mouse_spinal_cord/mouse_held_out_canonical.json` (SHA-256: `a9ed50703ca8fa9cfc1a2eb1c1639b1ba284253c02b5e3556ab0b6242ceaf31a`)
 - Feature Manifest: `artifacts/preprocessed/merfish_mouse_spinal_cord/mouse_held_out_canonical/feature_manifest.json` (SHA-256: `0ad75181c4f2c80b47d8c9b28d2d46fd09c3dc336480c02951abb653fb882e79`)
 - Graph Manifest (`spatial_knn_k6`): `artifacts/graphs/merfish_mouse_spinal_cord/mouse_held_out_canonical/spatial_knn_k6/graph_manifest.json` (SHA-256: `1f3f0e36f26ba424603015ff90b8a2ee91d6c27664e27b5577831a2371a4243e`)
@@ -98,14 +107,26 @@ PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu
 
 #### 4. Packaging & Ship-Back (GPU Worker)
 ```bash
+# Package results and execute pack-time audit
 uv run python scripts/package_gpu_results.py --dataset merfish_mouse_spinal_cord --split mouse_held_out_canonical --output gpu_results_merfish_canonical.tar.gz
+
+# Option A: Publish as GitHub release asset directly from GPU
+gh release create v0.1.0-merfish-results gpu_results_merfish_canonical.tar.gz --title "GPU Results: merfish_canonical_gnn_sweep" --notes "Cryptographically verified GPU sweep results for MERFISH canonical split."
+
+# Option B: Or SCP / transfer back to CPU node
+# scp gpu_results_merfish_canonical.tar.gz <user>@<host>:~/spatial-graph-bench/
 ```
 
 #### 5. Local CPU Ingestion & 4-Layer Audit (This Node)
-Once `gpu_results_merfish_canonical.tar.gz` is copied back to this directory:
+Once `gpu_results_merfish_canonical.tar.gz` is downloaded or copied:
 ```bash
+# If fetched via GitHub release:
+# gh release download v0.1.0-merfish-results -p gpu_results_merfish_canonical.tar.gz
+
+# Ingest and run 4-layer audit:
 PYTHONPATH=src uv run python scripts/receive_gpu_delivery.py gpu_results_merfish_canonical.tar.gz
 ```
 - **Verdict**: `PENDING_DELIVERY`
 - **Ingestion Log Record**: `audits/gpu_runs/ingestion_log.jsonl`
+
 

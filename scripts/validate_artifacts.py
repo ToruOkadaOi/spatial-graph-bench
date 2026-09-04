@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
+
+# Add src to sys.path so the script can be run directly
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from rich.console import Console
 from rich.table import Table
