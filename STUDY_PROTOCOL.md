@@ -2,6 +2,7 @@
 
 **Project**: `spatial-graph-bench`  
 **Registration Date**: 2026-09-04  
+**Pre-Registration Commit Hash**: `449a4d42cab2eb7a09e8c301c540659d8888cabe`  
 **Primary Question**: Do cell–cell spatial graphs provide a **genuine inductive benefit** over strong
 *spatially ignorant* baselines for **cell-type annotation** in spatial transcriptomics (ST)?  
 **Prior Framing**: Pre-registered replication and domain transplant of `scgraph-bench`, which observed
