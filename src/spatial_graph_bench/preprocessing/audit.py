@@ -20,6 +20,8 @@ def verify_spatial_ignorance(
     spatial_coords: np.ndarray,
     split: SplitDefinition,
     config: PreprocessingConfig,
+    label_col: str = "cell_type",
+    section_col: str = "section_id",
     seed: int = 42,
 ) -> bool:
     """Execute coordinate-shuffle test on feature preprocessing pipeline.
@@ -37,6 +39,8 @@ def verify_spatial_ignorance(
         spatial_coords=spatial_coords,
         split=split,
         config=config,
+        label_col=label_col,
+        section_col=section_col,
     )
 
     # 2. Permute coordinates randomly
@@ -50,6 +54,8 @@ def verify_spatial_ignorance(
         spatial_coords=shuffled_coords,
         split=split,
         config=config,
+        label_col=label_col,
+        section_col=section_col,
     )
 
     # 4. Assert feature identity

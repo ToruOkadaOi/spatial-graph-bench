@@ -11,7 +11,7 @@ This document tracks execution progress, gate outcomes, and test coverage across
 | **0** | Reference Mining & Data Verification Gates G1–G6 | **COMPLETED** | `census.json` complete, hierarchy settled, mining checklist reviewed | Gates G1–G6 audited; reference mined; Dataset 1 downloaded & verified. |
 | **1** | Scaffolding, Pre-Registration, CI, Porting | **COMPLETED** | CI green on fixture, protocol commit hash recorded, reference clone destroyed | CI green (16/16 tests pass), commit `449a4d4` recorded, reference clone destroyed. |
 | **2** | Split Protocol & Disjointness Validators | **COMPLETED** | `validate_split.py` green on all datasets | Canonical mouse-held-out (`00408e4741f5`) & spatial-block splits generated & validated. |
-| **3** | Feature Pipelines A/B & Spatial Ignorance Audit | IN PROGRESS | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default). |
+| **3** | Feature Pipelines A/B & Spatial Ignorance Audit | **COMPLETED** | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default); shuffle audit passed (max diff 0.0); MERFISH manifests issued. |
 | **4** | Graph Constructions, Controls & Validators | PENDING | Construction manifests chained, connectivity verified per variant | Spatial k-NN, rewired & shuffled controls, section-own topology. |
 | **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | PENDING | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned spatially ignorant models on train partitions only. |
 | **6** | GNN Sweeps on GPU via Handoff & Ingestion | PENDING | All runs PASS or quarantined with notes | Audited delivery with 4-layer verification. |
@@ -39,7 +39,26 @@ This document tracks execution progress, gate outcomes, and test coverage across
 - [x] `STUDY_PROTOCOL.md` pre-registration document authored.
 - [x] `DECISIONS_NEEDED.md` decision log authored.
 - [x] `docs/PORTING_LOG.md` authored.
-- [ ] Core package `src/spatial_graph_bench` ported and unit-tested.
-- [ ] Fixture dataset created and CPU smoke pipeline tested.
-- [ ] `pyproject.toml`, `uv.lock`, `Makefile`, `Dockerfile`, and GitHub Actions CI workflow implemented.
-- [ ] Protocol commit hash recorded; scratch reference clone `~/reference/scgraph-bench` destroyed.
+- [x] Core package `src/spatial_graph_bench` ported and unit-tested.
+- [x] Fixture dataset created and CPU smoke pipeline tested.
+- [x] `pyproject.toml`, `uv.lock`, `Makefile`, `Dockerfile`, and GitHub Actions CI workflow implemented.
+- [x] Protocol commit hash recorded; scratch reference clone `~/reference/scgraph-bench` destroyed.
+
+---
+
+## Phase 2 Execution Checklist
+
+- [x] `scripts/generate_splits.py` implemented.
+- [x] `scripts/validate_split.py` implemented with disjointness and §3.4 unseen-class coverage validator.
+- [x] MERFISH `mouse_held_out_canonical` generated and validated (`00408e4741f5681a...`, 60/60 classes covered, 0 excluded).
+- [x] MERFISH `spatial_block_exploratory` generated and validated (`8abde4e16b30955f...`).
+
+---
+
+## Phase 3 Execution Checklist
+
+- [x] `src/spatial_graph_bench/preprocessing/pipeline.py` implemented (train-only fitting of scalers, HVG, PCA).
+- [x] `src/spatial_graph_bench/preprocessing/audit.py` implemented (coordinate-shuffle test).
+- [x] `scripts/run_preprocessing.py` implemented.
+- [x] Coordinate-shuffle audit passed (max diff 0.0 <= 1e-6).
+- [x] Version A feature manifests and bundles issued for MERFISH canonical and block splits.
