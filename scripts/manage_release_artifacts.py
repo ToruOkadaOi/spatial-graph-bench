@@ -311,12 +311,16 @@ def fetch_release(
 
             ds = dataset_name or "merfish_mouse_spinal_cord"
             sp = split_id or "mouse_held_out_canonical"
-            console.print(f"\n[bold blue]Running structural invariant validation on {ds} ({sp})...[/bold blue]")
+            console.print(
+                f"\n[bold blue]Running structural invariant validation on {ds} ({sp})...[/bold blue]"
+            )
             valid = validate_all_artifacts(ds, sp)
             if not valid:
                 console.print("[bold red]Invariant validation failed![/bold red]")
                 return False
-            console.print("[bold green]All benchmark artifacts verified and ready for compute.[/bold green]")
+            console.print(
+                "[bold green]All benchmark artifacts verified and ready for compute.[/bold green]"
+            )
 
     return True
 
@@ -369,11 +373,15 @@ def main() -> None:
 
     # publish
     p_pub = subparsers.add_parser("publish", help="Pack and publish release via gh CLI")
-    p_pub.add_argument("--tag", type=str, required=True, help="Git release tag (e.g. v0.1.0-merfish-inputs)")
+    p_pub.add_argument(
+        "--tag", type=str, required=True, help="Git release tag (e.g. v0.1.0-merfish-inputs)"
+    )
     p_pub.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
     p_pub.add_argument("--split", type=str, default="mouse_held_out_canonical")
     p_pub.add_argument("--out-dir", type=Path, default=Path("dist"))
-    p_pub.add_argument("--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)")
+    p_pub.add_argument(
+        "--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)"
+    )
     p_pub.add_argument("--title", type=str, default=None)
     p_pub.add_argument("--notes", type=str, default=None)
 
@@ -381,7 +389,9 @@ def main() -> None:
     p_fetch = subparsers.add_parser("fetch", help="Download and verify release assets")
     p_fetch.add_argument("--tag", type=str, required=True, help="Git release tag to download")
     p_fetch.add_argument("--dest", type=Path, default=Path("."))
-    p_fetch.add_argument("--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)")
+    p_fetch.add_argument(
+        "--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)"
+    )
     p_fetch.add_argument("--no-unpack", action="store_true", default=False)
     p_fetch.add_argument("--no-validate", action="store_true", default=False)
     p_fetch.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
