@@ -13,7 +13,7 @@ This document tracks execution progress, gate outcomes, and test coverage across
 | **2** | Split Protocol & Disjointness Validators | **COMPLETED** | `validate_split.py` green on all datasets | Canonical mouse-held-out (`00408e4741f5`) & spatial-block splits generated & validated. |
 | **3** | Feature Pipelines A/B & Spatial Ignorance Audit | **COMPLETED** | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default); shuffle audit passed (max diff 0.0); MERFISH manifests issued. |
 | **4** | Graph Constructions, Controls & Validators | **COMPLETED** | Construction manifests chained, connectivity verified per variant | Spatial k-NN (k=6, 12), rewired & shuffled controls, Variant A bipartite; 0 cross-partition, 0 cross-section edges. |
-| **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | PENDING | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned spatially ignorant models on train partitions only. |
+| **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | **COMPLETED** | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned MLP (10 seeds, $\mu=0.5273 \pm 0.0035$), parity band $\pm 0.0069$, RF ($0.4683$). |
 | **6** | GNN Sweeps on GPU via Handoff & Ingestion | PENDING | All runs PASS or quarantined with notes | Audited delivery with 4-layer verification. |
 | **7** | Post-Hoc Analysis & Anti-Circularity Audit | PENDING | Circular metrics demoted per §3.3 | Matched lift, TOST equivalence test, boundary stratification. |
 | **8** | Reports & Cross-Dataset Synthesis | PENDING | Generated docs pass stale-reference guard | Canonical tables exported to markdown. |
@@ -82,3 +82,21 @@ This document tracks execution progress, gate outcomes, and test coverage across
   - `shuffled_spatial_knn_k12` (584,424 edges, 0 cross-partition/cross-section)
   - `bipartite_ref_k20` (1,256,355 edges, 0 query-query edges)
 - [x] Built and validated 7 graph bundles for MERFISH `spatial_block_exploratory`.
+
+---
+
+## Phase 5 Execution Checklist
+
+- [x] `scripts/train_baselines.py` implemented.
+- [x] Spatially ignorant MLP baseline trained across 10 independent seeds (42–51) on `mouse_held_out_canonical`:
+  - Test Macro-F1: $\mu_{\text{MLP}} = 0.5273$, $\sigma_{\text{MLP}} = 0.0035$
+  - Test Balanced Accuracy: $0.5247 \pm 0.0036$
+  - 100% label coverage (60/60 classes)
+- [x] Empirical parity band established:
+  - Halfwidth $2\sigma_{\text{MLP}} = 0.0069$
+  - Parity band interval: $[0.5204, 0.5342]$
+  - Pre-registered TOST equivalence margin: $\epsilon = 0.0069$
+- [x] Random Forest baseline trained (200 estimators):
+  - Test Macro-F1: $0.4683$ (MLP outperforms RF by $+0.0590$ F1)
+- [x] 4-layer delivery audit verification passed on all 11 baseline run directories.
+- [x] Canonical baselines frozen in `audits/baselines_snapshot/merfish_mouse_spinal_cord/mouse_held_out_canonical/`.

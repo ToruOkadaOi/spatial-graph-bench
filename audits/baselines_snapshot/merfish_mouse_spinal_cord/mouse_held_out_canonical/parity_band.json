@@ -1,0 +1,14 @@
+{
+  "dataset_name": "merfish_mouse_spinal_cord",
+  "split_id": "mouse_held_out_canonical",
+  "num_mlp_seeds": 10,
+  "mlp_mean_test_macro_f1": 0.5272892868389848,
+  "mlp_sigma_test_macro_f1": 0.003458623148295904,
+  "parity_band_halfwidth": 0.006917246296591808,
+  "parity_band_interval": [
+    0.5203720405423929,
+    0.5342065331355766
+  ],
+  "tost_equivalence_margin_epsilon": 0.006917246296591808,
+  "rf_test_macro_f1": 0.46832283813447906
+}

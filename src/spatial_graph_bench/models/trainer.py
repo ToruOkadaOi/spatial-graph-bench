@@ -20,6 +20,7 @@ from spatial_graph_bench.models.mlp import MLP
 from spatial_graph_bench.models.random_forest import RandomForestBaseline
 from spatial_graph_bench.preprocessing.schema import PreprocessedBundle
 from spatial_graph_bench.tracking.schema import RunManifest, RunStatus
+from spatial_graph_bench.utils.hashing import hash_dict
 from spatial_graph_bench.utils.logging import get_logger
 from spatial_graph_bench.utils.seed import set_seed
 from spatial_graph_bench.utils.versioning import get_code_version, get_torch_geometric_version
@@ -324,7 +325,14 @@ def run_benchmark_training(
         split_id=config.split_id,
         split_hash=feature_bundle.manifest.split_config_hash,
         feature_manifest_hash=feature_bundle.manifest.compute_manifest_hash(),
-        preprocessing_config_hash="",
+        preprocessing_config_hash=hash_dict(
+            {
+                "preprocessing_version": feature_bundle.manifest.preprocessing_version,
+                "n_pca_components": feature_bundle.manifest.n_pca_components,
+                "n_hvg": feature_bundle.manifest.n_hvg,
+                "scale_features": feature_bundle.manifest.scale_features,
+            }
+        ),
         graph_artifact_hash=graph_bundle.manifest.compute_manifest_hash() if graph_bundle else None,
         label_mapping_hash=feature_bundle.manifest.label_mapping_hash,
         protocol_variant=graph_bundle.manifest.protocol_variant
