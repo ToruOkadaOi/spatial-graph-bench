@@ -10,8 +10,8 @@ This document tracks execution progress, gate outcomes, and test coverage across
 |---|---|---|---|---|
 | **0** | Reference Mining & Data Verification Gates G1–G6 | **COMPLETED** | `census.json` complete, hierarchy settled, mining checklist reviewed | Gates G1–G6 audited; reference mined; Dataset 1 downloaded & verified. |
 | **1** | Scaffolding, Pre-Registration, CI, Porting | **COMPLETED** | CI green on fixture, protocol commit hash recorded, reference clone destroyed | CI green (16/16 tests pass), commit `449a4d4` recorded, reference clone destroyed. |
-| **2** | Split Protocol & Disjointness Validators | IN PROGRESS | `validate_split.py` green on all datasets | Canonical donor/section holdout & spatial-block checks. |
-| **3** | Feature Pipelines A/B & Spatial Ignorance Audit | PENDING | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default). |
+| **2** | Split Protocol & Disjointness Validators | **COMPLETED** | `validate_split.py` green on all datasets | Canonical mouse-held-out (`00408e4741f5`) & spatial-block splits generated & validated. |
+| **3** | Feature Pipelines A/B & Spatial Ignorance Audit | IN PROGRESS | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default). |
 | **4** | Graph Constructions, Controls & Validators | PENDING | Construction manifests chained, connectivity verified per variant | Spatial k-NN, rewired & shuffled controls, section-own topology. |
 | **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | PENDING | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned spatially ignorant models on train partitions only. |
 | **6** | GNN Sweeps on GPU via Handoff & Ingestion | PENDING | All runs PASS or quarantined with notes | Audited delivery with 4-layer verification. |
