@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-09-04T15:20:00Z",
+  "description": "Acquisition manifest and immutable cryptographic anchor for spatial-graph-bench benchmark datasets.",
+  "upstream_reference": {
+    "paper": "Benchmarking cell type annotation in spatial transcriptomics: resolving cellular hierarchies, biological fidelity, and dynamic cell states",
+    "biorxiv_doi": "10.64898/2026.06.16.732716",
+    "biorxiv_id": "2026.06.16.732716",
+    "github": "https://github.com/maiziezhoulab/Benchmark_ST_cell_type_annotation",
+    "zenodo": "https://doi.org/10.5281/zenodo.20720105"
+  },
+  "datasets": {
+    "merfish_mouse_spinal_cord": {
+      "dataset_id": "merfish_mouse_spinal_cord",
+      "platform": "MERFISH",
+      "organism": "Mus musculus",
+      "tissue": "Spinal cord",
+      "source_repository": "Zenodo",
+      "source_accession": "10.5281/zenodo.18039571",
+      "license": "CC-BY-4.0",
+      "hierarchy_language": "donor-held-out",
+      "hierarchy_rationale": "Gate G2 confirmed: 'Mouse ID' column present in h5ad obs. 5 adult mice (F3, F4, F5, M4, M5) across 18 sections (41,267 cells).",
+      "files": [
+        {
+          "filename": "MERFISH_spinal_cord_resolved_0718.h5ad",
+          "url": "https://zenodo.org/api/records/18039571/files/MERFISH_spinal_cord_resolved_0718.h5ad/content",
+          "size_bytes": 98970238,
+          "sha256": "567011c8bca5bb83d20ba5ff36d22eeff3fb3f2c387a843cd1cf35bda54b937d",
+          "raw_data_snapshot_id": "data/raw/merfish_spinal_cord/MERFISH_spinal_cord_resolved_0718.h5ad",
+          "verified": true,
+          "notes": "Raw uint32 counts in X, spatial coordinates in obsm['spatial'] and obs[['center_x', 'center_y']]. Gate G1 & G2 passed."
+        }
+      ]
+    },
+    "openst_human_lymph_node": {
+      "dataset_id": "openst_human_lymph_node",
+      "platform": "Open-ST",
+      "organism": "Homo sapiens",
+      "tissue": "Metastatic cervical lymph node (HNSCC patient)",
+      "source_repository": "GEO",
+      "source_accession": "GSE251926",
+      "license": "NCBI Public Access",
+      "hierarchy_language": "section-held-out",
+      "hierarchy_rationale": "Gate G4 confirmed: 19 serial sections (~18 um spacing, 350 um stack) from a single patient. Upstream benchmark holds out section #6 (GSM7990104) as reference and section #19 (GSM7990110) as query (separated by 13 sections / ~234 um).",
+      "files": [
+        {
+          "filename": "GSE251926_metastatic_lymph_node_3d.h5ad.gz",
+          "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE251nnn/GSE251926/suppl/GSE251926_metastatic_lymph_node_3d.h5ad.gz",
+          "size_bytes": 2349602965,
+          "raw_data_snapshot_id": "data/raw/openst_human_lymph_node/GSE251926_metastatic_lymph_node_3d.h5ad.gz",
+          "notes": "Consolidated 3D h5ad with 19 serial sections, ~15 annotated cell types."
+        },
+        {
+          "filename": "GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
+          "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE251nnn/GSE251926/suppl/GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
+          "size_bytes": 587106306,
+          "raw_data_snapshot_id": "data/raw/openst_human_lymph_node/GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
+          "notes": "Canonical training reference section (S6)."
+        },
+        {
+          "filename": "GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
+          "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE251nnn/GSE251926/suppl/GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
+          "size_bytes": 525692575,
+          "raw_data_snapshot_id": "data/raw/openst_human_lymph_node/GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
+          "notes": "Canonical held-out test section (S19)."
+        }
+      ]
+    },
+    "xenium_mouse_kidney": {
+      "dataset_id": "xenium_mouse_kidney",
+      "platform": "Xenium",
+      "organism": "Mus musculus",
+      "tissue": "Kidney (IRI injury and repair)",
+      "source_repository": "GEO",
+      "source_accession": "GSE269719",
+      "license": "NCBI Public Access",
+      "hierarchy_language": "replicate-held-out",
+      "hierarchy_rationale": "Gate G3 confirmed: GSM metadata lacks explicit animal IDs. 12 sections spanning 6 stages (Sham, H4, H12, D2, D14, W6) with two technical replicates per time point (L and R kidneys). Strict replicate-held-out split, never 'donor-held-out'.",
+      "files": [
+        {
+          "filename": "GSM8325615_xenium_shamL_male_output.tar.gz",
+          "url": "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM8325nnn/GSM8325615/suppl/GSM8325615_xenium_shamL_male_output.tar.gz",
+          "raw_data_snapshot_id": "data/raw/xenium_mouse_kidney/GSM8325615_xenium_shamL_male_output.tar.gz",
+          "notes": "Sham replicate 1 (Left kidney)"
+        },
+        {
+          "filename": "GSM8325616_xenium_shamR_male_output.tar.gz",
+          "url": "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM8325nnn/GSM8325616/suppl/GSM8325616_xenium_shamR_male_output.tar.gz",
+          "raw_data_snapshot_id": "data/raw/xenium_mouse_kidney/GSM8325616_xenium_shamR_male_output.tar.gz",
+          "notes": "Sham replicate 2 (Right kidney)"
+        }
+      ]
+    },
+    "stereoseq_axolotl_telencephalon": {
+      "dataset_id": "stereoseq_axolotl_telencephalon",
+      "platform": "Stereo-seq",
+      "organism": "Ambystoma mexicanum",
+      "tissue": "Telencephalon",
+      "source_repository": "CNGBdb ARTISTA",
+      "source_accession": "CNP0002068 / STDS0000056",
+      "license": "Public Open Access",
+      "hierarchy_language": "replicate-held-out",
+      "hierarchy_rationale": "Gate G5 confirmed: public ARTISTA direct download URLs verified. Replicate slices across developmental/regeneration stages (5DPI rep1+rep2 reference vs rep3 query; Stage54 reference vs Stage44 query). Split language is 'replicate-held-out', never 'donor-held-out'.",
+      "files": [
+        {
+          "filename": "Stage44.h5ad",
+          "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/Stage44.h5ad",
+          "nominal_size_bytes": 35845958,
+          "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/Stage44.h5ad",
+          "notes": "Developmental query slice"
+        },
+        {
+          "filename": "Stage54.h5ad",
+          "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/Stage54.h5ad",
+          "nominal_size_bytes": 180355072,
+          "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/Stage54.h5ad",
+          "notes": "Developmental reference slice"
+        },
+        {
+          "filename": "5DPI_1.h5ad",
+          "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/5DPI_1.h5ad",
+          "nominal_size_bytes": 530579456,
+          "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/5DPI_1.h5ad",
+          "notes": "Regeneration 5DPI biological replicate 1 (reference)"
+        },
+        {
+          "filename": "5DPI_2.h5ad",
+          "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/5DPI_2.h5ad",
+          "nominal_size_bytes": 684720128,
+          "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/5DPI_2.h5ad",
+          "notes": "Regeneration 5DPI biological replicate 2 (reference)"
+        },
+        {
+          "filename": "5DPI_3.h5ad",
+          "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/5DPI_3.h5ad",
+          "nominal_size_bytes": 513802240,
+          "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/5DPI_3.h5ad",
+          "notes": "Regeneration 5DPI biological replicate 3 (query)"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Testing & Coverage
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+
+# Type checking & Linting
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# Large Datasets and Raw Files (data/census.json is tracked)
+/data/*
+!/data/census.json
+!/data/.gitkeep
+
+# Artifacts: heavy binaries stay out of git; small aggregated evidence is tracked
+/artifacts/*
+!/artifacts/.gitkeep
+!/artifacts/aggregated/
+/artifacts/aggregated/**/*.png
+/results/*
+!/results/.gitkeep
+!/results/reports/
+/mlruns/
+/gpu-runs/
+/tmp-sweep/
+
+# Heavy binary extensions
+*.h5ad
+*.h5
+*.npz
+*.pt
+*.parquet
+*.tar.gz
+*.tar
+*.npy
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Manual quarantine: non-canonical CPU-device run dirs (payloads kept on disk, not in git)
+/audits/gpu_runs/manual_quarantine_noncuda/
