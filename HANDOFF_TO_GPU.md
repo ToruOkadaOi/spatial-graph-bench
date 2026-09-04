@@ -65,4 +65,42 @@ uv run python scripts/package_gpu_results.py --dataset <dataset_id> --split <spl
 
 ## Active & Historical GPU Batches
 
-*(Batches will be logged here as CPU-side preprocessing and graph constructions are frozen in Phases 2–4.)*
+### Batch: `merfish_canonical_gnn_sweep`
+- **Emitted At**: 2026-09-04T15:52:00Z
+- **Target Platform / Split**: `merfish_mouse_spinal_cord` / `mouse_held_out_canonical`
+- **Protocol Variant**: `canonical_section_own` (and `variant_a_bipartite`)
+- **Commit SHA**: `127a9a29c4cebb3c0382011b81e05b8cc57138e3`
+- **Lockfile SHA**: `4c1a3104f659b4f13cd99524bab75ea8bb0f82b556ff70dcddf8482dc6bd9cdf`
+
+#### 1. Setup Commands
+```bash
+git clone https://github.com/ToruOkadaOi/spatial-graph-bench.git
+cd spatial-graph-bench
+git checkout 127a9a29c4cebb3c0382011b81e05b8cc57138e3
+uv sync --frozen
+uv run python -c "import torch; assert torch.cuda.is_available(), 'CUDA not available!'; print('CUDA device:', torch.cuda.get_device_name(0))"
+```
+
+#### 2. Input Artifacts & Hashes
+- Split JSON: `splits/merfish_mouse_spinal_cord/mouse_held_out_canonical.json` (SHA-256: `a9ed50703ca8fa9cfc1a2eb1c1639b1ba284253c02b5e3556ab0b6242ceaf31a`)
+- Feature Manifest: `artifacts/preprocessed/merfish_mouse_spinal_cord/mouse_held_out_canonical/feature_manifest.json` (SHA-256: `0ad75181c4f2c80b47d8c9b28d2d46fd09c3dc336480c02951abb653fb882e79`)
+- Graph Manifest (`spatial_knn_k6`): `artifacts/graphs/merfish_mouse_spinal_cord/mouse_held_out_canonical/spatial_knn_k6/graph_manifest.json` (SHA-256: `1f3f0e36f26ba424603015ff90b8a2ee91d6c27664e27b5577831a2371a4243e`)
+- Frozen MLP Baselines: `audits/baselines_snapshot/merfish_mouse_spinal_cord/mouse_held_out_canonical/baselines_summary.json` (Parity Band: $\pm 0.0069$)
+
+#### 3. Execution Command
+```bash
+PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical.yaml
+```
+
+#### 4. Packaging & Delivery
+```bash
+uv run python scripts/package_gpu_results.py --dataset merfish_mouse_spinal_cord --split mouse_held_out_canonical --output gpu_results_merfish_canonical.tar.gz
+```
+
+#### 5. Local CPU Ingestion
+```bash
+uv run python scripts/receive_gpu_delivery.py gpu_results_merfish_canonical.tar.gz
+```
+- **Verdict**: `PENDING_DELIVERY`
+- **Ingestion Log Record**: `audits/gpu_runs/ingestion_log.jsonl`
+
