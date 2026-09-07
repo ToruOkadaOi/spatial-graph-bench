@@ -4,12 +4,6 @@ Thank you for your interest in contributing to `spatial-graph-bench`! We welcome
 
 ---
 
-## Code of Conduct
-
-All contributors are expected to adhere to our [Code of Conduct](file:///Users/aman/Documents/spatial-graph-bench/CODE_OF_CONDUCT.md). Please read it before participating.
-
----
-
 ## Development Setup
 
 1. **Fork and Clone**:
