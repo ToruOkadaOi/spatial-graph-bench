@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    { name = "spatial-graph-bench team" }
+    { name = "Aman Nalakath" }
 ]
 dependencies = [
     "numpy>=1.24.0",
@@ -65,6 +65,8 @@ ignore = [
     "B008", # do not perform function calls in argument defaults
 ]
 
+per-file-ignores = { "scripts/*" = ["E402"] }
+
 [tool.ruff.lint.isort]
 known-first-party = ["spatial_graph_bench"]
 
@@ -76,6 +78,11 @@ addopts = "-ra -q --strict-markers"
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "smoke: quick CPU smoke tests",
+    "unit: fast isolated unit tests",
+    "slow: longer running benchmark tests",
+]
 
 [tool.mypy]
 python_version = "3.11"

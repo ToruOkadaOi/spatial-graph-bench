@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, protocol, or code in your research, please cite it as below."
+title: "spatial-graph-bench: A Rigorous Inductive-Benefit Benchmark for Spatial Graph Neural Networks in Cell-Type Annotation"
+version: 0.1.0
+date-released: 2026-09-04
+authors:
+  - family-names: "Nalakath"
+    given-names: "Aman"
+    alias: "ToruOkadaOi"
+  - name: "The Spatial Graph Bench Contributors"
+repository-code: "https://github.com/ToruOkadaOi/spatial-graph-bench"
+url: "https://github.com/ToruOkadaOi/spatial-graph-bench"
+license: "MIT"
+keywords:
+  - "spatial transcriptomics"
+  - "graph neural networks"
+  - "cell type annotation"
+  - "inductive learning"
+  - "reproducible benchmark"
+  - "merfish"
+  - "open-st"
+  - "xenium"
+  - "stereo-seq"
+type: software
+abstract: >
+  A pre-registered benchmark evaluating whether spatial graph message-passing
+  provides an empirical inductive benefit over tuned spatially ignorant baselines
+  for cell-type annotation across 4 spatial transcriptomics platforms.

@@ -1,0 +1,51 @@
+name: Bug Report
+description: Report a bug, invariant violation, or unexpected benchmark behavior
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping improve `spatial-graph-bench`! Please provide details to reproduce the issue.
+  - type: input
+    id: dataset_split
+    attributes:
+      label: Dataset & Split
+      description: Which dataset and split were you running? (e.g. merfish_mouse_spinal_cord / mouse_held_out_canonical)
+      placeholder: merfish_mouse_spinal_cord
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: Exact command-line commands to reproduce the error.
+      placeholder: |
+        1. uv run python scripts/run_gnn_sweep.py ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal Output & Logs
+      description: Paste relevant terminal output or log snippets from `logs/spatial_bench.log`.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, CUDA version, GPU model.
+      placeholder: |
+        - OS: Ubuntu 24.04
+        - Python: 3.12.3
+        - PyTorch: 2.3.0
+        - GPU: NVIDIA A10G
+    validations:
+      required: true

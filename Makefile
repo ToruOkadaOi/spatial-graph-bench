@@ -25,6 +25,9 @@ typecheck:
 smoke-test:
 	$(UV) run pytest -v tests/test_smoke_pipeline.py
 
+test-dummy:
+	$(UV) run python scripts/run_dummy_benchmark.py
+
 check: lint test
 
 clean:

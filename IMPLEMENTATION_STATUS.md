@@ -1,6 +1,6 @@
 # IMPLEMENTATION_STATUS.md: Phase Tracker & Test Coverage
 
-This document tracks execution progress, gate outcomes, and test coverage across the 9 phases of `spatial-graph-bench`.
+This document tracks execution progress, verification gate outcomes, and test coverage across all 9 phases and all 4 spatial transcriptomics platforms of `spatial-graph-bench`.
 
 ---
 
@@ -14,13 +14,24 @@ This document tracks execution progress, gate outcomes, and test coverage across
 | **3** | Feature Pipelines A/B & Spatial Ignorance Audit | **COMPLETED** | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default); shuffle audit passed (max diff 0.0); MERFISH manifests issued. |
 | **4** | Graph Constructions, Controls & Validators | **COMPLETED** | Construction manifests chained, connectivity verified per variant | Spatial k-NN (k=6, 12), rewired & shuffled controls, Variant A bipartite; 0 cross-partition, 0 cross-section edges. |
 | **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | **COMPLETED** | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned MLP (10 seeds, $\mu=0.5273 \pm 0.0035$), parity band $\pm 0.0069$, RF ($0.4683$). |
-| **6** | GNN Sweeps on GPU via Handoff & Ingestion | PENDING | All runs PASS or quarantined with notes | Audited delivery with 4-layer verification. |
-| **7** | Post-Hoc Analysis & Anti-Circularity Audit | PENDING | Circular metrics demoted per §3.3 | Matched lift, TOST equivalence test, boundary stratification. |
-| **8** | Reports & Cross-Dataset Synthesis | PENDING | Generated docs pass stale-reference guard | Canonical tables exported to markdown. |
+| **6** | GNN Sweeps on GPU via Handoff & Ingestion | **IN PROGRESS** | All runs PASS or quarantined with notes | Input bundle published (`v0.1.0-merfish-inputs`); GPU handoff batch emitted. |
+| **7** | Post-Hoc Analysis & Anti-Circularity Audit | **PENDING** | Circular metrics demoted per §3.3 | Matched lift, TOST equivalence test, boundary stratification. |
+| **8** | Reports & Cross-Dataset Synthesis | **PENDING** | Generated docs pass stale-reference guard | Canonical tables exported to markdown & Zenodo archival. |
 
 ---
 
-## Phase 0: Verification Gates Detailed Status
+## Cross-Platform Platform Status Matrix
+
+| Platform / Dataset | Phase 0 (Census) | Phase 2 (Splits) | Phase 3 (Prep) | Phase 4 (Graphs) | Phase 5 (Baselines) | Phase 6 (GNNs) | Phase 7 (Lift) | Phase 8 (Report) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1. MERFISH Mouse Spinal Cord** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :hourglass_flowing_sand: | `PENDING` | `PENDING` |
+| **2. Open-ST Mouse Olfactory** | :white_check_mark: | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` |
+| **3. Xenium Human Breast Cancer** | :white_check_mark: | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` |
+| **4. Stereo-seq Axolotl Brain** | :white_check_mark: | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` |
+
+---
+
+## Phase 0: Verification Gates Status (COMPLETED)
 
 - [x] **Reference Mining**: Cloned `scgraph-bench` to scratch `~/reference/scgraph-bench`, mined tracking schemas, packaging/receive scripts, split validators, bipartite vs. section-own connectivity, CI, and bugfix history.
 - [x] **Gate G1 (Raw-Data Root)**: Opened Dataset 1's h5ad (`MERFISH_spinal_cord_resolved_0718.h5ad`); confirmed raw uint32 counts in `adata.X` and spatial coordinates in `obsm['spatial']` and `obs[['center_x', 'center_y']]`.
@@ -32,40 +43,46 @@ This document tracks execution progress, gate outcomes, and test coverage across
 
 ---
 
-## Phase 1 Execution Checklist
+## Phase 1 Execution Checklist (COMPLETED)
 
 - [x] Repository layout scaffolded (.github, audits, configs, data, docs, scripts, splits, src, tests).
 - [x] Root `.gitignore` configured to keep heavy binaries out of git while tracking audit ledgers.
-- [x] `STUDY_PROTOCOL.md` pre-registration document authored.
+- [x] `STUDY_PROTOCOL.md` pre-registration document authored and committed (`449a4d4`).
 - [x] `DECISIONS_NEEDED.md` decision log authored.
 - [x] `docs/PORTING_LOG.md` authored.
 - [x] Core package `src/spatial_graph_bench` ported and unit-tested.
 - [x] Fixture dataset created and CPU smoke pipeline tested.
 - [x] `pyproject.toml`, `uv.lock`, `Makefile`, `Dockerfile`, and GitHub Actions CI workflow implemented.
-- [x] Protocol commit hash recorded; scratch reference clone `~/reference/scgraph-bench` destroyed.
+- [x] Protocol commit hash recorded; scratch reference clone destroyed.
 
 ---
 
-## Phase 2 Execution Checklist
+## Phase 2 Execution Checklist (COMPLETED)
 
 - [x] `scripts/generate_splits.py` implemented.
 - [x] `scripts/validate_split.py` implemented with disjointness and §3.4 unseen-class coverage validator.
 - [x] MERFISH `mouse_held_out_canonical` generated and validated (`00408e4741f5681a...`, 60/60 classes covered, 0 excluded).
 - [x] MERFISH `spatial_block_exploratory` generated and validated (`8abde4e16b30955f...`).
+- [ ] `#todo` Open-ST: Generate and validate `section_held_out_canonical` split (sec #6 ref, sec #19 query).
+- [ ] `#todo` Xenium: Generate and validate `replicate_held_out_canonical` split.
+- [ ] `#todo` Stereo-seq: Generate and validate `replicate_held_out_canonical` split.
 
 ---
 
-## Phase 3 Execution Checklist
+## Phase 3 Execution Checklist (COMPLETED FOR MERFISH)
 
 - [x] `src/spatial_graph_bench/preprocessing/pipeline.py` implemented (train-only fitting of scalers, HVG, PCA).
 - [x] `src/spatial_graph_bench/preprocessing/audit.py` implemented (coordinate-shuffle test).
 - [x] `scripts/run_preprocessing.py` implemented.
-- [x] Coordinate-shuffle audit passed (max diff 0.0 <= 1e-6).
+- [x] Coordinate-shuffle audit passed for MERFISH (max diff 0.0 <= 1e-6).
 - [x] Version A feature manifests and bundles issued for MERFISH canonical and block splits.
+- [ ] `#todo` Open-ST: Execute preprocessing and coordinate-shuffle audit.
+- [ ] `#todo` Xenium: Execute preprocessing and coordinate-shuffle audit.
+- [ ] `#todo` Stereo-seq: Execute preprocessing and coordinate-shuffle audit.
 
 ---
 
-## Phase 4 Execution Checklist
+## Phase 4 Execution Checklist (COMPLETED FOR MERFISH)
 
 - [x] `src/spatial_graph_bench/graph/spatial_knn.py` implemented with strict section-own grouping.
 - [x] `src/spatial_graph_bench/graph/rewired_control.py` implemented (degree-preserving swaps within section & partition).
@@ -82,10 +99,13 @@ This document tracks execution progress, gate outcomes, and test coverage across
   - `shuffled_spatial_knn_k12` (584,424 edges, 0 cross-partition/cross-section)
   - `bipartite_ref_k20` (1,256,355 edges, 0 query-query edges)
 - [x] Built and validated 7 graph bundles for MERFISH `spatial_block_exploratory`.
+- [ ] `#todo` Open-ST: Build and topologically validate 7 graph topologies.
+- [ ] `#todo` Xenium: Build and topologically validate 7 graph topologies.
+- [ ] `#todo` Stereo-seq: Build and topologically validate 7 graph topologies.
 
 ---
 
-## Phase 5 Execution Checklist
+## Phase 5 Execution Checklist (COMPLETED FOR MERFISH)
 
 - [x] `scripts/train_baselines.py` implemented.
 - [x] Spatially ignorant MLP baseline trained across 10 independent seeds (42–51) on `mouse_held_out_canonical`:
@@ -96,7 +116,41 @@ This document tracks execution progress, gate outcomes, and test coverage across
   - Halfwidth $2\sigma_{\text{MLP}} = 0.0069$
   - Parity band interval: $[0.5204, 0.5342]$
   - Pre-registered TOST equivalence margin: $\epsilon = 0.0069$
-- [x] Random Forest baseline trained (200 estimators):
-  - Test Macro-F1: $0.4683$ (MLP outperforms RF by $+0.0590$ F1)
+- [x] Random Forest baseline trained (200 estimators): Test Macro-F1 $0.4683$.
 - [x] 4-layer delivery audit verification passed on all 11 baseline run directories.
 - [x] Canonical baselines frozen in `audits/baselines_snapshot/merfish_mouse_spinal_cord/mouse_held_out_canonical/`.
+- [ ] `#todo` Open-ST: Train 10-seed MLP baselines and establish empirical parity band.
+- [ ] `#todo` Xenium: Train 10-seed MLP baselines and establish empirical parity band.
+- [ ] `#todo` Stereo-seq: Train 10-seed MLP baselines and establish empirical parity band.
+
+---
+
+## Phase 6 Execution Checklist (IN PROGRESS)
+
+- [x] Implemented `scripts/manage_release_artifacts.py` for GitHub Releases distribution.
+- [x] Published initial release [`v0.1.0-merfish-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-merfish-inputs) (16.09 MB verified tarball).
+- [x] Generated GPU worker configuration: `configs/gpu_batch_merfish_canonical.yaml`.
+- [x] Documented GPU execution protocol in `HANDOFF_TO_GPU.md`.
+- [ ] `#todo` MERFISH: Execute GNN sweep (GCN, GraphSAGE, GAT, GIN) on GPU worker instance across all 7 topologies.
+- [ ] `#todo` MERFISH: Run `scripts/package_gpu_results.py` and upload `gpu_results_merfish_canonical.tar.gz`.
+- [ ] `#todo` MERFISH: Ingest delivery bundle on CPU node via `scripts/receive_gpu_delivery.py` and verify all 4 audit layers.
+- [ ] `#todo` Open-ST / Xenium / Stereo-seq: Emit batch configs and execute GPU sweeps.
+
+---
+
+## Phase 7 Execution Checklist (PENDING)
+
+- [ ] `#todo` Compute matched graph lift ($\Delta \text{Macro-F1} = \text{F1}_{\text{GNN}} - \text{F1}_{\text{MLP}}$) for every model/graph combination.
+- [ ] `#todo` Perform Two One-Sided Tests (TOST) for equivalence against $\epsilon = 0.0069$ per pre-registered §3.1 decision rule.
+- [ ] `#todo` Execute boundary vs. interior margin cell stratification via `scripts/stratify_boundary_lift.py`.
+- [ ] `#todo` Evaluate negative controls (rewired and coordinate-shuffled) to detect topological artifacts.
+- [ ] `#todo` Log all statistical outcomes in immutable audit ledger `audits/gpu_runs/ingestion_log.jsonl`.
+
+---
+
+## Phase 8 Execution Checklist (PENDING)
+
+- [ ] `#todo` Generate canonical results markdown report: `docs/results-merfish.md`.
+- [ ] `#todo` Generate cross-platform synthesis tables and comparison figures.
+- [ ] `#todo` Validate all documentation against stale-reference checks.
+- [ ] `#todo` Package and archive benchmark reproducibility bundle on Zenodo with permanent DOI.
