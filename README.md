@@ -1,108 +1,100 @@
-# spatial-graph-bench
+# spatial-graph-bench: Benchmarking Graph Inductive Benefit in Spatial Transcriptomics
 
-[![CI](https://github.com/ToruOkadaOi/spatial-graph-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/ToruOkadaOi/spatial-graph-bench/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/ToruOkadaOi/spatial-graph-bench)](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-merfish-inputs)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](pyproject.toml)
-[![Protocol: Pre-Registered](https://img.shields.io/badge/protocol-pre--registered-success.svg)](STUDY_PROTOCOL.md)
-
-**Spatial Graph Inductive-Benefit Benchmark for Cell-Type Annotation**
-
-A research-software benchmark investigating whether cell–cell spatial graphs provide a **genuine inductive benefit** over tuned *spatially ignorant* baselines for **cell-type annotation** in spatial transcriptomics (ST).
-
-This project is a **pre-registered replication attempt** transplanting the rigorous single-cell evaluation methodology of `scgraph-bench` into the spatial domain across 4 major spatial platforms: **MERFISH**, **Open-ST**, **Xenium**, and **Stereo-seq**.
+`spatial-graph-bench` is a benchmark evaluating whether cell–cell spatial graphs provide a genuine inductive benefit over strong non-graph baselines for cell-type annotation in spatial transcriptomics (ST).
 
 ---
 
-## Quick Navigation
+## 1. Core Research Question
 
-| Resource | Purpose |
-| :--- | :--- |
-| 📖 **[`REPRODUCE.md`](REPRODUCE.md)** | **Step-by-step reproduction handbook** written for non-domain engineers (copy-paste commands, expected outputs). |
-| 🧪 **[`TESTING.md`](TESTING.md)** | Complete testing guide covering Unit Tests, Invariant Validators, and CPU Smoke Runs. |
-| 🗺️ **[`scripts/FLOW.md`](scripts/FLOW.md)** | Visual Mermaid diagram and reference of the CLI execution pipeline. |
-| 🏗️ **[`src/FLOW.md`](src/FLOW.md)** | Internal architecture and immutable Pydantic data pipeline flow. |
-| 📜 **[`STUDY_PROTOCOL.md`](STUDY_PROTOCOL.md)** | Pre-registered hypotheses, closed comparison grid, and statistical decision rules. |
-| 📋 **[`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md)** | Live phase tracker (Phases 0–8) and `#todo` checklist across all 4 platforms. |
-| 📦 **[`docs/results-index.md`](docs/results-index.md)** | Catalog of official release assets, SHA-256 hashes, and baseline snapshots. |
-| ⚙️ **[`INSTALL.md`](INSTALL.md)** | Installation recipes for `uv`, standard `pip/venv`, `conda/mamba`, and Docker. |
-| 🛡️ **[`SECURITY.md`](SECURITY.md)** | Responsible disclosure policy and cryptographic integrity model. |
-| 📝 **[`CITATION.md`](CITATION.md)** | BibTeX entry and academic citation guidelines. |
+> **“When do cell–cell spatial graphs provide a genuine inductive benefit over tuned non-graph baselines for cell-type annotation in spatial transcriptomics, which graph constructions help, and which measurable spatial properties explain success or failure?”**
+
+This benchmark isolates the effect of **spatial graph topology** from model architecture across 4 platforms (**MERFISH**, **Open-ST**, **Xenium**, **Stereo-seq**). A null or negative graph lift over an MLP baseline is treated as a valid scientific finding.
+
+Standard transductive GNNs (GCN, GraphSAGE, GAT, GIN) are evaluated under an inductive, section-own protocol to test generalization to unseen biological slices and donors.
 
 ---
 
-## Core Invariants
+## 2. Scientific Principles
 
-1. **Labels never enter graph construction**: Graph topology is constructed strictly from spatial coordinates.
-2. **Identical frozen features across all models**: Performance gains must be attributable to spatial message passing, not feature drift.
-3. **Cryptographic parent-hashing**: Raw data snapshot $\to$ Split $\to$ Feature manifest $\to$ Construction manifest $\to$ Run manifest.
-4. **The GPU is untrusted compute**: Every delivery package is audited locally on CPU through four integrity layers.
-5. **No test data contamination**: Normalization, highly variable gene selection, and PCA are fit strictly on training partitions.
-6. **Section-own-subgraph inductive evaluation**: Test-time message passing uses only the held-out section's internal spatial subgraph; strictly zero cross-partition and zero cross-section edges.
+- **Donor / Section Held-Out Evaluation**: Strict inductive evaluation where donors and sections in validation and test partitions are disjoint from training tissue.
+- **Section-Own Spatial Subgraphs**: Test-time message passing uses strictly internal spatial coordinates within the held-out tissue slice; zero cross-partition and zero cross-section edges.
+- **Identical Fixed Features**: Every model (Random Forest, MLP, GNN) is evaluated on the exact same train-fitted 50 Principal Components.
+- **Spatial Ignorance in Feature Extraction**: Verified via coordinate-shuffle audit (maximum absolute difference $0.0 \le 10^{-6}$; zero coordinate leakage).
+- **Negative Controls**: Degree-preserving edge rewired controls and coordinate-shuffled controls to detect topological smoothing artifacts.
+- **Reproducible Artifact Registry**: Splits, feature bundles, and graph topologies are frozen with cryptographic SHA-256 validation hashes and distributed via verified release bundles.
 
 ---
 
-## 30-Second Quickstart
+## 3. Quickstart
 
-### 1. Bootstrap Environment
+### Installation with `uv`
+
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/ToruOkadaOi/spatial-graph-bench.git
 cd spatial-graph-bench
 
-# Install pinned dependencies via uv
+# Synchronize exact dependencies from uv.lock
 uv sync --frozen
 ```
 
-### 2. Run the Instant CPU Dummy Benchmark (< 1 second)
-Verify that the entire benchmark pipeline, schemas, training loops, delivery audits, and matched lift math work on your machine without downloading any data or using a GPU:
-```bash
-uv run python scripts/run_dummy_benchmark.py
-```
+### Running Verification & Tests
 
-### 3. Run Test Suite & Lint Checks
 ```bash
-# Run pytest test suite (16 tests)
+# Run standalone CPU dummy benchmark (< 1 second)
+uv run python scripts/run_dummy_benchmark.py
+
+# Run unit tests
 uv run pytest -v tests
 
-# Run strict linter and formatter check
+# Run linter and format checks
 uv run ruff check src tests scripts
 uv run ruff format --check src tests scripts
 ```
 
 ---
 
-## Reproducing the Benchmark Results
+## 4. Architecture
 
-To reproduce reported numbers on the canonical MERFISH mouse spinal cord dataset:
-
-```bash
-# 1. Download and verify pre-packaged release assets (16.09 MB)
-uv run python scripts/manage_release_artifacts.py fetch --tag v0.1.0-merfish-inputs
-
-# 2. Verify topological and feature invariants
-uv run python scripts/validate_artifacts.py --dataset merfish_mouse_spinal_cord --split mouse_held_out_canonical
-
-# 3. Train the 10-seed MLP baseline to verify the parity band (Macro-F1 0.5273 ± 0.0035)
-uv run python scripts/train_baselines.py --dataset merfish_mouse_spinal_cord --split mouse_held_out_canonical --num-seeds 10
+```text
+src/spatial_graph_bench/
+├── config/         # Strict Pydantic benchmark configs (split, prep, graph, model)
+├── splitting/      # Donor/section holdout partition assignment and split schemas
+├── preprocessing/  # Train-fitted normalisation, HVG, PCA 50, and spatial ignorance audit
+├── graph/          # Spatial k-NN, rewired controls, shuffled controls, bipartite
+├── models/         # Tuned MLP, SpatialGNN (GCN, GraphSAGE, GAT, GIN), trainer loops
+├── analysis/       # 4-layer delivery audit, batch manifests, ingestion ledger
+├── tracking/       # Run manifests, matched graph lift, parity band evaluation
+└── utils/          # Hashing, seed management, dual-stream logging, path resolution
 ```
-
-For the complete guide with hardware requirements, expected stdout logs, and from-scratch raw data execution, see **[`REPRODUCE.md`](REPRODUCE.md)**.
 
 ---
 
-## Author & Citation
+## 5. Protocols and Documentation
 
-Maintained by **Aman Nalakath** ([@ToruOkadaOi](https://github.com/ToruOkadaOi)) and Spatial Graph Bench Contributors.
+- [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md): Pre-registered scientific contract, closed comparison grid, and statistical decision rules.
+- [REPRODUCE.md](REPRODUCE.md): Step-by-step reproduction handbook with copy-paste commands and expected outputs.
+- [TESTING.md](TESTING.md): 4-tier testing guide (unit, invariant validators, smoke runs, delivery audits).
+- [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md): Current completion status and `#todo` roadmap across all phases and platforms.
+- [DECISIONS_NEEDED.md](DECISIONS_NEEDED.md): Decision log tracking protocol options.
+- [HANDOFF_TO_GPU.md](HANDOFF_TO_GPU.md): Remote GPU execution contract and batch manifests.
+- [scripts/FLOW.md](scripts/FLOW.md): CLI script execution pipeline diagram.
+- [src/FLOW.md](src/FLOW.md): Internal package architecture and data flow diagram.
+- [docs/results-index.md](docs/results-index.md): Catalog of release artifacts, baseline snapshots, and SHA-256 checksums.
+- [INSTALL.md](INSTALL.md): Extended installation recipes (uv, pip/venv, conda, Docker).
+- [CONTRIBUTING.md](CONTRIBUTING.md): Contribution guidelines and topological invariant review checklist.
+- [CITATION.md](CITATION.md): Academic citation format and BibTeX.
+- [LICENSE](LICENSE): MIT License.
 
-If you use this benchmark in your research, please cite:
-```bibtex
-@software{nalakath2026spatialgraphbench,
-  author       = {Nalakath, Aman},
-  title        = {spatial-graph-bench: A Rigorous Inductive-Benefit Benchmark for Spatial Graph Neural Networks in Cell-Type Annotation},
-  year         = {2026},
-  url          = {https://github.com/ToruOkadaOi/spatial-graph-bench}
-}
-```
+---
 
-Licensed under the [MIT License](LICENSE).
+## 6. Baseline Reference & Parity Band (MERFISH Mouse Spinal Cord)
+
+Computed across 10 independent random seeds (42–51) on `mouse_held_out_canonical` (41,267 cells across 5 animals and 18 sections):
+
+- **Spatially Ignorant MLP**: Macro-F1 $\mathbf{0.5273 \pm 0.0035}$ (Balanced Accuracy: $0.5247 \pm 0.0036$).
+- **Random Forest Baseline**: Macro-F1 $\mathbf{0.4683}$.
+- **Empirical Parity Band ($\pm 2\sigma_{\text{MLP}}$)**: $\mathbf{\pm 0.0069}$, interval $[0.5204, 0.5342]$.
+- **Pre-Registered TOST Equivalence Margin**: $\epsilon = \mathbf{0.0069}$.
+
+Any spatial GNN failing to exceed $0.5342$ Macro-F1 provides no empirical benefit over gene expression alone.
