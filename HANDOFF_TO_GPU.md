@@ -100,9 +100,18 @@ uv run python -c "import torch; assert torch.cuda.is_available(), 'CUDA not avai
 - Graph Manifest (`spatial_knn_k6`): `artifacts/graphs/merfish_mouse_spinal_cord/mouse_held_out_canonical/spatial_knn_k6/graph_manifest.json` (SHA-256: `1f3f0e36f26ba424603015ff90b8a2ee91d6c27664e27b5577831a2371a4243e`)
 - Frozen MLP Baselines: `audits/baselines_snapshot/merfish_mouse_spinal_cord/mouse_held_out_canonical/baselines_summary.json` (Parity Band: $\pm 0.0069$)
 
-#### 3. Execution Command (GPU Worker)
+#### 3. Execution Commands (GPU Worker)
+
+**Step 3A: Pilot Validation Run (~15–25 mins, 28 runs across seed 42)**  
+Recommended first step to verify CUDA setup, GPU memory headroom, and pipeline health without waiting hours:
 ```bash
-PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical.yaml
+PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical_pilot.yaml
+```
+
+**Step 3B: Full Statistical Benchmark (~2.5–3.5 hours, 280 runs across seeds 42–51)**  
+Executes all 10 pre-registered random seeds for publication-grade error bars, 90% confidence intervals, and formal TOST equivalence testing:
+```bash
+PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical_full.yaml
 ```
 
 #### 4. Packaging & Ship-Back (GPU Worker)

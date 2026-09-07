@@ -129,8 +129,8 @@ This document tracks execution progress, verification gate outcomes, and test co
 
 - [x] Implemented `scripts/manage_release_artifacts.py` for GitHub Releases distribution.
 - [x] Published initial release [`v0.1.0-merfish-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-merfish-inputs) (16.09 MB verified tarball).
-- [x] Generated GPU worker configuration: `configs/gpu_batch_merfish_canonical.yaml`.
-- [x] Documented GPU execution protocol in `HANDOFF_TO_GPU.md`.
+- [x] Generated GPU worker configurations: `configs/gpu_batch_merfish_canonical_pilot.yaml` (28 runs, 1 seed) and `configs/gpu_batch_merfish_canonical_full.yaml` (280 runs, 10 seeds).
+- [x] Documented GPU execution protocol in `HANDOFF_TO_GPU.md` and `REPRODUCE.md` with two-stage pilot and full workflows.
 - [ ] `#todo` MERFISH: Execute GNN sweep (GCN, GraphSAGE, GAT, GIN) on GPU worker instance across all 7 topologies.
 - [ ] `#todo` MERFISH: Run `scripts/package_gpu_results.py` and upload `gpu_results_merfish_canonical.tar.gz`.
 - [ ] `#todo` MERFISH: Ingest delivery bundle on CPU node via `scripts/receive_gpu_delivery.py` and verify all 4 audit layers.

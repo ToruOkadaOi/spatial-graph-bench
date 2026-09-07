@@ -1,14 +1,10 @@
 # ==============================================================================
-# GPU BENCHMARK SWEEP: MERFISH Mouse Spinal Cord Canonical Split
-#
-# Profiles Available:
-#   1. Pilot (Fast check, 28 runs, ~15 mins):
-#      configs/gpu_batch_merfish_canonical_pilot.yaml
-#   2. Full (10 seeds, 280 runs, ~3.5 hours):
-#      configs/gpu_batch_merfish_canonical_full.yaml
+# GPU PILOT BATCH: MERFISH Mouse Spinal Cord Canonical Split
+# Purpose: Fast sanity check & smoke validation on remote GPU instances.
+# Total Runs: 4 models × 7 graphs × 1 seed = 28 runs (~15-25 mins on modern GPU)
 # ==============================================================================
 
-batch_id: merfish_mouse_spinal_cord_mouse_held_out_canonical_gnn_sweep
+batch_id: merfish_mouse_spinal_cord_mouse_held_out_canonical_pilot_sweep
 dataset_name: merfish_mouse_spinal_cord
 split_id: mouse_held_out_canonical
 
@@ -29,15 +25,6 @@ graphs:
 
 seeds:
   - 42
-  - 43
-  - 44
-  - 45
-  - 46
-  - 47
-  - 48
-  - 49
-  - 50
-  - 51
 
 training:
   max_epochs: 200

@@ -115,8 +115,15 @@ uv run python scripts/train_baselines.py --dataset merfish_mouse_spinal_cord --s
 ```
 
 #### Step A4: Execute the GNN Sweep on GPU
+
+**Option 1: Pilot Validation Run (~15–25 mins, 28 runs across seed 42)**
 ```bash
-PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical.yaml
+PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical_pilot.yaml
+```
+
+**Option 2: Full Statistical Benchmark (~2.5–3.5 hours, 280 runs across seeds 42–51)**
+```bash
+PYTHONPATH=src uv run python scripts/run_gnn_sweep.py --batch-config configs/gpu_batch_merfish_canonical_full.yaml
 ```
 *(On CPU-only machines, you can add `--device cpu` inside the YAML configuration).*
 
