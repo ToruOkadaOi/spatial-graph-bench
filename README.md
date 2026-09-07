@@ -25,7 +25,9 @@ Standard transductive GNNs (GCN, GraphSAGE, GAT, GIN) are evaluated under an ind
 
 ---
 
-## 3. Quickstart
+## 3. Quick start & Repo Struct.
+<details>
+<summary>Here!</summary>
 
 ### Installation with `uv`
 
@@ -54,7 +56,7 @@ uv run ruff format --check src tests scripts
 
 ---
 
-## 4. Architecture
+### Architecture
 
 ```text
 src/spatial_graph_bench/
@@ -68,9 +70,11 @@ src/spatial_graph_bench/
 └── utils/          # Hashing, seed management, dual-stream logging, path resolution
 ```
 
+</details>
+
 ---
 
-## 5. Protocols and Documentation
+## 4. Protocols and Documentation
 
 - [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md): Pre-registered scientific contract, closed comparison grid, and statistical decision rules.
 - [REPRODUCE.md](REPRODUCE.md): Step-by-step reproduction handbook with copy-paste commands and expected outputs.
@@ -88,7 +92,7 @@ src/spatial_graph_bench/
 
 ---
 
-## 6. Baseline Reference & Parity Band (MERFISH Mouse Spinal Cord)
+## 5. Baseline Reference & Parity Band (MERFISH Mouse Spinal Cord)
 
 Computed across 10 independent random seeds (42–51) on `mouse_held_out_canonical` (41,267 cells across 5 animals and 18 sections):
 
