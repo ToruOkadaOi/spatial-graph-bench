@@ -11,7 +11,6 @@ Executes:
 from __future__ import annotations
 
 import json
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -24,8 +23,11 @@ from sklearn.metrics import f1_score
 console = Console()
 
 
-def compute_boundary_mask(coords: np.ndarray, sections: np.ndarray, percentile: float = 15.0) -> np.ndarray:
+def compute_boundary_mask(
+    coords: np.ndarray, sections: np.ndarray, percentile: float = 15.0
+) -> np.ndarray:
     """Classify cells into boundary-margin vs deep interior using distance to section hull."""
+
     def point_to_segment_dist(p: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         ab = b - a
         ap = p - a
@@ -35,7 +37,7 @@ def compute_boundary_mask(coords: np.ndarray, sections: np.ndarray, percentile: 
 
     is_boundary = np.zeros(len(coords), dtype=bool)
     for sec in np.unique(sections):
-        sec_mask = (sections == sec)
+        sec_mask = sections == sec
         sec_pts = coords[sec_mask]
         hull = ConvexHull(sec_pts)
 
@@ -81,8 +83,12 @@ def run_post_hoc_analysis():
     bnd_mask = eval_mask & is_boundary
 
     console.print(f"[bold green]>>> Loaded {len(coords)} test cells:[/bold green]")
-    console.print(f"  Interior evaluated cells: {int_mask.sum():,} ({int_mask.sum()/eval_mask.sum():.1%})")
-    console.print(f"  Boundary evaluated cells: {bnd_mask.sum():,} ({bnd_mask.sum()/eval_mask.sum():.1%})")
+    console.print(
+        f"  Interior evaluated cells: {int_mask.sum():,} ({int_mask.sum() / eval_mask.sum():.1%})"
+    )
+    console.print(
+        f"  Boundary evaluated cells: {bnd_mask.sum():,} ({bnd_mask.sum() / eval_mask.sum():.1%})"
+    )
 
     # 2. Evaluate MLP baselines (10 seeds)
     mlp_records = {}
@@ -90,9 +96,15 @@ def run_post_hoc_analysis():
         mlp_run_dir = results_dir / f"mlp_none_seed{seed}"
         preds = np.load(mlp_run_dir / "test_preds.npy")
 
-        overall_f1 = f1_score(y_true[eval_mask], preds[eval_mask], labels=eval_ids, average="macro", zero_division=0.0)
-        int_f1 = f1_score(y_true[int_mask], preds[int_mask], labels=eval_ids, average="macro", zero_division=0.0)
-        bnd_f1 = f1_score(y_true[bnd_mask], preds[bnd_mask], labels=eval_ids, average="macro", zero_division=0.0)
+        overall_f1 = f1_score(
+            y_true[eval_mask], preds[eval_mask], labels=eval_ids, average="macro", zero_division=0.0
+        )
+        int_f1 = f1_score(
+            y_true[int_mask], preds[int_mask], labels=eval_ids, average="macro", zero_division=0.0
+        )
+        bnd_f1 = f1_score(
+            y_true[bnd_mask], preds[bnd_mask], labels=eval_ids, average="macro", zero_division=0.0
+        )
 
         mlp_records[seed] = {
             "overall_f1": float(overall_f1),
@@ -103,9 +115,12 @@ def run_post_hoc_analysis():
     # 3. Evaluate 28 GNN configurations (10 seeds each)
     models = ["gcn", "gat", "gin", "graphsage"]
     graphs = [
-        "spatial_knn_k6", "spatial_knn_k12",
-        "rewired_spatial_knn_k6", "rewired_spatial_knn_k12",
-        "shuffled_spatial_knn_k6", "shuffled_spatial_knn_k12",
+        "spatial_knn_k6",
+        "spatial_knn_k12",
+        "rewired_spatial_knn_k6",
+        "rewired_spatial_knn_k12",
+        "shuffled_spatial_knn_k6",
+        "shuffled_spatial_knn_k12",
         "bipartite_ref_k20",
     ]
 
@@ -127,9 +142,27 @@ def run_post_hoc_analysis():
                     continue
                 preds = np.load(run_dir / "test_preds.npy")
 
-                g_overall = f1_score(y_true[eval_mask], preds[eval_mask], labels=eval_ids, average="macro", zero_division=0.0)
-                g_int = f1_score(y_true[int_mask], preds[int_mask], labels=eval_ids, average="macro", zero_division=0.0)
-                g_bnd = f1_score(y_true[bnd_mask], preds[bnd_mask], labels=eval_ids, average="macro", zero_division=0.0)
+                g_overall = f1_score(
+                    y_true[eval_mask],
+                    preds[eval_mask],
+                    labels=eval_ids,
+                    average="macro",
+                    zero_division=0.0,
+                )
+                g_int = f1_score(
+                    y_true[int_mask],
+                    preds[int_mask],
+                    labels=eval_ids,
+                    average="macro",
+                    zero_division=0.0,
+                )
+                g_bnd = f1_score(
+                    y_true[bnd_mask],
+                    preds[bnd_mask],
+                    labels=eval_ids,
+                    average="macro",
+                    zero_division=0.0,
+                )
 
                 m_rec = mlp_records[seed]
                 overall_lifts.append(g_overall - m_rec["overall_f1"])
@@ -152,43 +185,45 @@ def run_post_hoc_analysis():
             # TOST tests: H01: Delta <= -eps, H02: Delta >= +eps
             t1 = (mean_lift - (-epsilon)) / se
             t2 = (mean_lift - epsilon) / se
-            p1 = 1.0 - stats.t.cdf(t1, df=n-1)
-            p2 = stats.t.cdf(t2, df=n-1)
+            p1 = 1.0 - stats.t.cdf(t1, df=n - 1)
+            p2 = stats.t.cdf(t2, df=n - 1)
             p_tost = float(max(p1, p2))
 
             # Directional hypothesis tests
             # Superiority: H0: Delta <= eps
-            p_sup = float(1.0 - stats.t.cdf(t2, df=n-1))
+            p_sup = float(1.0 - stats.t.cdf(t2, df=n - 1))
             # Inferiority: H0: Delta >= -eps
-            p_inf = float(stats.t.cdf(t1, df=n-1))
+            p_inf = float(stats.t.cdf(t1, df=n - 1))
 
             # 90% Confidence Interval for TOST
-            t_crit_90 = stats.t.ppf(0.95, df=n-1)
+            t_crit_90 = stats.t.ppf(0.95, df=n - 1)
             ci_90_low = mean_lift - t_crit_90 * se
             ci_90_high = mean_lift + t_crit_90 * se
 
             int_arr = np.array(int_lifts)
             bnd_arr = np.array(bnd_lifts)
 
-            analysis_results.append({
-                "model": mod.upper(),
-                "graph": gr,
-                "n": n,
-                "gnn_overall": float(np.mean(gnn_overalls)),
-                "gnn_int": float(np.mean(gnn_interiors)),
-                "gnn_bnd": float(np.mean(gnn_boundaries)),
-                "mean_lift": mean_lift,
-                "std_lift": std_lift,
-                "ci_90_low": float(ci_90_low),
-                "ci_90_high": float(ci_90_high),
-                "int_lift_mean": float(np.mean(int_arr)),
-                "int_lift_std": float(np.std(int_arr, ddof=1)),
-                "bnd_lift_mean": float(np.mean(bnd_arr)),
-                "bnd_lift_std": float(np.std(bnd_arr, ddof=1)),
-                "p_tost": p_tost,
-                "p_sup": p_sup,
-                "p_inf": p_inf,
-            })
+            analysis_results.append(
+                {
+                    "model": mod.upper(),
+                    "graph": gr,
+                    "n": n,
+                    "gnn_overall": float(np.mean(gnn_overalls)),
+                    "gnn_int": float(np.mean(gnn_interiors)),
+                    "gnn_bnd": float(np.mean(gnn_boundaries)),
+                    "mean_lift": mean_lift,
+                    "std_lift": std_lift,
+                    "ci_90_low": float(ci_90_low),
+                    "ci_90_high": float(ci_90_high),
+                    "int_lift_mean": float(np.mean(int_arr)),
+                    "int_lift_std": float(np.std(int_arr, ddof=1)),
+                    "bnd_lift_mean": float(np.mean(bnd_arr)),
+                    "bnd_lift_std": float(np.std(bnd_arr, ddof=1)),
+                    "p_tost": p_tost,
+                    "p_sup": p_sup,
+                    "p_inf": p_inf,
+                }
+            )
 
     # 4. Holm-Bonferroni correction over the 28 comparisons
     # For inferiority (if negative) or superiority (if positive)
@@ -224,7 +259,9 @@ def run_post_hoc_analysis():
             r["decision"] = "INCONCLUSIVE / PARITY"
 
     # Display Table 1: Stratified Lift (Interior vs. Boundary)
-    t1 = Table(title="Post-Hoc Boundary Stratification: Interior vs. Boundary Lift (merfish_canonical)")
+    t1 = Table(
+        title="Post-Hoc Boundary Stratification: Interior vs. Boundary Lift (merfish_canonical)"
+    )
     t1.add_column("Model", style="cyan")
     t1.add_column("Graph Construction", style="magenta")
     t1.add_column("Overall Lift (Δ)", justify="right")

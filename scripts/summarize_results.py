@@ -9,9 +9,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import glob
 import json
-import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -28,7 +26,11 @@ def load_all_results(results_dir: Path):
     for seed in range(42, 52):
         mlp_f = results_dir / f"mlp_none_seed{seed}" / "metrics_summary.json"
         if not mlp_f.exists():
-            mlp_f = Path("artifacts/snapshots/merfish_mouse_spinal_cord/mouse_held_out_canonical") / f"mlp_none_seed{seed}" / "metrics_summary.json"
+            mlp_f = (
+                Path("artifacts/snapshots/merfish_mouse_spinal_cord/mouse_held_out_canonical")
+                / f"mlp_none_seed{seed}"
+                / "metrics_summary.json"
+            )
         if mlp_f.exists():
             with open(mlp_f) as f:
                 m = json.load(f)
@@ -37,9 +39,12 @@ def load_all_results(results_dir: Path):
     data = defaultdict(lambda: {"gnn": [], "mlp": [], "lift": [], "time": [], "epoch": []})
     models = ["gcn", "gat", "gin", "graphsage"]
     graphs = [
-        "spatial_knn_k6", "spatial_knn_k12",
-        "rewired_spatial_knn_k6", "rewired_spatial_knn_k12",
-        "shuffled_spatial_knn_k6", "shuffled_spatial_knn_k12",
+        "spatial_knn_k6",
+        "spatial_knn_k12",
+        "rewired_spatial_knn_k6",
+        "rewired_spatial_knn_k12",
+        "shuffled_spatial_knn_k6",
+        "shuffled_spatial_knn_k12",
         "bipartite_ref_k20",
     ]
 
@@ -143,14 +148,17 @@ def print_per_class(results_dir: Path):
 
     records = []
     for c in mlp_mean:
-        records.append({
-            "class": c,
-            "mlp": mlp_mean[c],
-            "gcn": np.mean(gcn_classes[c]) if gcn_classes[c] else 0,
-            "gcn_delta": (np.mean(gcn_classes[c]) if gcn_classes[c] else 0) - mlp_mean[c],
-            "gin_bip": np.mean(gin_bip_classes[c]) if gin_bip_classes[c] else 0,
-            "gin_delta": (np.mean(gin_bip_classes[c]) if gin_bip_classes[c] else 0) - mlp_mean[c],
-        })
+        records.append(
+            {
+                "class": c,
+                "mlp": mlp_mean[c],
+                "gcn": np.mean(gcn_classes[c]) if gcn_classes[c] else 0,
+                "gcn_delta": (np.mean(gcn_classes[c]) if gcn_classes[c] else 0) - mlp_mean[c],
+                "gin_bip": np.mean(gin_bip_classes[c]) if gin_bip_classes[c] else 0,
+                "gin_delta": (np.mean(gin_bip_classes[c]) if gin_bip_classes[c] else 0)
+                - mlp_mean[c],
+            }
+        )
 
     # Top collapsed
     table1 = Table(title="Top 10 Cell Types with Worst Collapse in GCN (spatial_knn_k6)")
@@ -171,7 +179,9 @@ def print_per_class(results_dir: Path):
     table2.add_column("Δ Gain", justify="right", style="bold green")
 
     for r in sorted(records, key=lambda x: x["gin_delta"], reverse=True)[:10]:
-        table2.add_row(r["class"], f"{r['mlp']:.4f}", f"{r['gin_bip']:.4f}", f"{r['gin_delta']:+.4f}")
+        table2.add_row(
+            r["class"], f"{r['mlp']:.4f}", f"{r['gin_bip']:.4f}", f"{r['gin_delta']:+.4f}"
+        )
     console.print(table2)
 
 
@@ -188,7 +198,9 @@ def inspect_run(run_dir: Path):
             man = json.load(f)
         console.print(f"[bold green]Run Manifest: {man.get('run_id')}[/bold green]")
         console.print(f"  Model: {man.get('model_name')} | Seed: {man.get('seed')}")
-        console.print(f"  Best Epoch: {man.get('best_epoch')} | Training Time: {man.get('training_time_seconds', 0):.2f}s")
+        console.print(
+            f"  Best Epoch: {man.get('best_epoch')} | Training Time: {man.get('training_time_seconds', 0):.2f}s"
+        )
         console.print(f"  Best Val Macro-F1: {man.get('best_val_macro_f1'):.4f}")
 
     if m_path.exists():
@@ -202,8 +214,14 @@ def inspect_run(run_dir: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="Inspect benchmark sweep results.")
-    parser.add_argument("--results-dir", type=Path, default=Path("artifacts/results/merfish_mouse_spinal_cord/mouse_held_out_canonical"))
-    parser.add_argument("--per-class", action="store_true", help="Show per-class top collapse and gains")
+    parser.add_argument(
+        "--results-dir",
+        type=Path,
+        default=Path("artifacts/results/merfish_mouse_spinal_cord/mouse_held_out_canonical"),
+    )
+    parser.add_argument(
+        "--per-class", action="store_true", help="Show per-class top collapse and gains"
+    )
     parser.add_argument("--run", type=str, help="Inspect a specific run folder name")
     args = parser.parse_args()
 
