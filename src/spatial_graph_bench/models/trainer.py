@@ -59,7 +59,7 @@ def run_benchmark_training(
         train_preds = rf.predict(feature_bundle.X_pca_train)
         val_preds = rf.predict(feature_bundle.X_pca_val)
         test_preds = rf.predict(feature_bundle.X_pca_test)
-        test_probs = rf.predict_proba(feature_bundle.X_pca_test)
+        test_probs = rf.predict_proba(feature_bundle.X_pca_test, num_classes=num_classes)
 
         train_summary = compute_partition_metrics(
             feature_bundle.train_labels,

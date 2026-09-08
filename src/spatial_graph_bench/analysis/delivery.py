@@ -282,13 +282,29 @@ def audit_run_dir(
             reported_f1 = reported_test.get("macro_f1")
 
             if reported_f1 is not None and len_ok:
-                # Compute on active test labels
-                active_labels = sorted(set(y_test[y_test >= 0]))
-                recomputed_f1 = float(
-                    f1_score(
-                        y_test, y_pred, labels=active_labels, average="macro", zero_division=0.0
+                eval_label_names = reported_test.get("evaluated_labels")
+                label_to_id = getattr(prep_bundle, "label_to_id", None)
+                if eval_label_names and label_to_id:
+                    eval_ids = [label_to_id[lab] for lab in eval_label_names if lab in label_to_id]
+                    mask = np.isin(y_test, eval_ids)
+                    y_test_sub = y_test[mask]
+                    y_pred_sub = y_pred[mask]
+                    recomputed_f1 = float(
+                        f1_score(
+                            y_test_sub,
+                            y_pred_sub,
+                            labels=eval_ids,
+                            average="macro",
+                            zero_division=0.0,
+                        )
                     )
-                )
+                else:
+                    active_labels = sorted(set(y_test[y_test >= 0]))
+                    recomputed_f1 = float(
+                        f1_score(
+                            y_test, y_pred, labels=active_labels, average="macro", zero_division=0.0
+                        )
+                    )
                 delta = abs(recomputed_f1 - reported_f1)
                 f1_ok = delta <= MACRO_F1_TOLERANCE
                 checks.append(

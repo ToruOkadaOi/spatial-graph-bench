@@ -95,3 +95,6 @@ Thumbs.db
 
 # Manual quarantine: non-canonical CPU-device run dirs (payloads kept on disk, not in git)
 /audits/gpu_runs/manual_quarantine_noncuda/
+
+# Graphify knowledge graph outputs
+graphify-out/

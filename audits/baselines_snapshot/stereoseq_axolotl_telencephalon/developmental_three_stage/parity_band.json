@@ -1,0 +1,14 @@
+{
+  "dataset_name": "stereoseq_axolotl_telencephalon",
+  "split_id": "developmental_three_stage",
+  "num_mlp_seeds": 10,
+  "mlp_mean_test_macro_f1": 0.5600347412872093,
+  "mlp_sigma_test_macro_f1": 0.010726041334200052,
+  "parity_band_halfwidth": 0.021452082668400103,
+  "parity_band_interval": [
+    0.5385826586188092,
+    0.5814868239556095
+  ],
+  "tost_equivalence_margin_epsilon": 0.021452082668400103,
+  "rf_test_macro_f1": 0.5184243486173226
+}

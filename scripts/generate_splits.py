@@ -6,6 +6,7 @@ import argparse
 
 import anndata as ad
 import numpy as np
+import pandas as pd
 
 from spatial_graph_bench.config.split import SplitConfig, SplitHierarchy
 from spatial_graph_bench.splitting.generator import create_split_definition
@@ -110,6 +111,89 @@ def generate_merfish_splits() -> None:
     logger.info("Saved exploratory spatial-block split: %s", out_block)
 
 
+def generate_stereoseq_splits() -> None:
+    paths = ArtifactPaths.default()
+    p44 = paths.raw_data_dir / "axolotl_telencephalon" / "Stage44.h5ad"
+    p54 = paths.raw_data_dir / "axolotl_telencephalon" / "Stage54.h5ad"
+    if not p44.is_file() or not p54.is_file():
+        raise FileNotFoundError(f"Stereo-seq raw files missing: {p44} or {p54}")
+
+    logger.info("Loading Stereo-seq raw files: %s and %s", p44, p54)
+    a44 = ad.read_h5ad(p44, backed="r")
+    a54 = ad.read_h5ad(p54, backed="r")
+
+    obs44 = a44.obs.copy()
+    obs54 = a54.obs.copy()
+
+    obs44["slice"] = "Stage44"
+    obs54["slice"] = "Stage54"
+
+    obs44["global_cell_id"] = ["Stage44_" + str(idx) for idx in obs44.index]
+    obs54["global_cell_id"] = ["Stage54_" + str(idx) for idx in obs54.index]
+
+    obs44.index = obs44["global_cell_id"]
+    obs54.index = obs54["global_cell_id"]
+
+    joint_obs = pd.concat([obs54, obs44])
+
+    canonical_cfg = SplitConfig(
+        dataset_name="stereoseq_axolotl_telencephalon",
+        split_id="replicate_held_out_canonical",
+        hierarchy=SplitHierarchy.REPLICATE_HELD_OUT,
+        seed=42,
+        train_groups=["Stage54"],
+        val_groups=[],
+        val_ratio_within_train=0.2,
+        test_groups=["Stage44"],
+        group_column="slice",
+    )
+
+    canonical_split = create_split_definition(
+        joint_obs,
+        canonical_cfg,
+        cell_id_col="global_cell_id",
+        label_col="Annotation",
+    )
+    out_canonical = paths.dataset_split_file(
+        "stereoseq_axolotl_telencephalon", "replicate_held_out_canonical"
+    )
+    canonical_split.save_json(out_canonical)
+    logger.info("Saved Stereo-seq canonical split: %s", out_canonical)
+
+    p57 = paths.raw_data_dir / "axolotl_telencephalon" / "Stage57.h5ad"
+    if p57.is_file():
+        logger.info("Loading Stereo-seq Stage57: %s", p57)
+        a57 = ad.read_h5ad(p57, backed="r")
+        obs57 = a57.obs.copy()
+        obs57["slice"] = "Stage57"
+        obs57["global_cell_id"] = ["Stage57_" + str(idx) for idx in obs57.index]
+        obs57.index = obs57["global_cell_id"]
+        joint_obs_3stage = pd.concat([obs54, obs44, obs57])
+
+        three_stage_cfg = SplitConfig(
+            dataset_name="stereoseq_axolotl_telencephalon",
+            split_id="developmental_three_stage",
+            hierarchy=SplitHierarchy.REPLICATE_HELD_OUT,
+            seed=42,
+            train_groups=["Stage44", "Stage54"],
+            val_groups=[],
+            val_ratio_within_train=0.2,
+            test_groups=["Stage57"],
+            group_column="slice",
+        )
+        three_stage_split = create_split_definition(
+            joint_obs_3stage,
+            three_stage_cfg,
+            cell_id_col="global_cell_id",
+            label_col="Annotation",
+        )
+        out_three_stage = paths.dataset_split_file(
+            "stereoseq_axolotl_telencephalon", "developmental_three_stage"
+        )
+        three_stage_split.save_json(out_three_stage)
+        logger.info("Saved Stereo-seq 3-stage split: %s", out_three_stage)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
@@ -117,5 +201,7 @@ if __name__ == "__main__":
 
     if args.dataset == "merfish_mouse_spinal_cord":
         generate_merfish_splits()
+    elif args.dataset == "stereoseq_axolotl_telencephalon":
+        generate_stereoseq_splits()
     else:
         raise ValueError(f"Unknown dataset: {args.dataset}")

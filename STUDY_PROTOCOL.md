@@ -31,7 +31,7 @@ $$\{\text{MLP, RF}\} \times \{\text{GCN, GraphSAGE, GAT, GIN}\} \times \{\text{R
 | 1 | `merfish_mouse_spinal_cord` | MERFISH (500 genes) | Adult mouse spinal cord (18 sections, 41,267 cells) | Animal (`Mouse ID`: F3, F4, F5, M4, M5) | **donor-held-out** |
 | 2 | `openst_human_lymph_node` | Open-ST (3D stack) | Human metastatic lymph node (19 serial sections, 350 µm stack) | Depth stack section (Ref #6 vs Query #19) | **section-held-out** |
 | 3 | `xenium_mouse_kidney` | Xenium (300 genes) | Mouse kidney IRI / repair (12 sections, 6 stages) | Technical replicate per stage (Left vs Right kidney) | **replicate-held-out** |
-| 4 | `stereoseq_axolotl_telencephalon` | Stereo-seq | Axolotl telencephalon (development & regeneration) | Biological slice replicate (5DPI rep1+rep2 vs rep3; Stage54 vs 44) | **replicate-held-out** |
+| 4 | `stereoseq_axolotl_telencephalon` | Stereo-seq | Axolotl telencephalon (development & regeneration) | Biological slice replicate (Stage44 + Stage54 vs Stage57; Stage54 vs 44; 5DPI) | **replicate-held-out** |
 
 ---
 

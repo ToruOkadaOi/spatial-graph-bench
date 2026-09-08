@@ -105,16 +105,29 @@
         {
           "filename": "Stage44.h5ad",
           "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/Stage44.h5ad",
-          "nominal_size_bytes": 35845958,
+          "size_bytes": 35901329,
+          "sha256": "5e8cec47d1e92321598e74d15183d9de8dc8ba3d2dc691b2be32b847b5169a39",
           "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/Stage44.h5ad",
-          "notes": "Developmental query slice"
+          "verified": true,
+          "notes": "Developmental query slice (1,477 cells, 9 cell types). Gate G5 verified."
         },
         {
           "filename": "Stage54.h5ad",
           "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/Stage54.h5ad",
-          "nominal_size_bytes": 180355072,
+          "size_bytes": 179532585,
+          "sha256": "25aa8c16503ad4be24a3c0273f7f2619a5de5a9e35d1682c837f7d7e8aad805b",
           "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/Stage54.h5ad",
-          "notes": "Developmental reference slice"
+          "verified": true,
+          "notes": "Developmental reference slice (2,929 cells, 16 cell types). Gate G5 verified."
+        },
+        {
+          "filename": "Stage57.h5ad",
+          "url": "https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000056/stomics/Stage57.h5ad",
+          "size_bytes": 316408484,
+          "sha256": "d2b083278979ac342196ddbb620f310d09e8b4eacba539fe06417be40b124ba8",
+          "raw_data_snapshot_id": "data/raw/axolotl_telencephalon/Stage57.h5ad",
+          "verified": true,
+          "notes": "Developmental hindlimb stage slice (5,361 cells). Gate G5 verified."
         },
         {
           "filename": "5DPI_1.h5ad",
