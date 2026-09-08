@@ -39,7 +39,7 @@ jobs:
       - name: Run Mypy (Informational / Non-blocking)
         continue-on-error: true
         run: |
-          mypy --explicit-package-bases src tests scripts
+          mypy --python-version ${{ matrix.python-version }} --explicit-package-bases src tests scripts
 
       - name: Run Pytest Suite & Fixture Smoke Pipeline (Mandatory)
         run: |
