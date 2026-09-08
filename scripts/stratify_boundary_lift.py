@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import scipy.stats as stats
@@ -124,7 +125,7 @@ def run_post_hoc_analysis():
         "bipartite_ref_k20",
     ]
 
-    analysis_results = []
+    analysis_results: list[dict[str, Any]] = []
     epsilon = 0.0069  # Pre-registered parity threshold
 
     for mod in models:
@@ -229,21 +230,21 @@ def run_post_hoc_analysis():
     # For inferiority (if negative) or superiority (if positive)
     m_tests = len(analysis_results)
     # Collect unadjusted p-values for testing hypothesis against parity band
-    p_to_correct = []
+    p_to_correct: list[tuple[float, str, dict[str, Any]]] = []
     for r in analysis_results:
         if r["mean_lift"] > epsilon:
-            p_val = r["p_sup"]
+            p_val = float(r["p_sup"])
             test_type = "superiority"
         elif r["mean_lift"] < -epsilon:
-            p_val = r["p_inf"]
+            p_val = float(r["p_inf"])
             test_type = "inferiority"
         else:
-            p_val = r["p_tost"]
+            p_val = float(r["p_tost"])
             test_type = "equivalence"
         p_to_correct.append((p_val, test_type, r))
 
     # Sort ascending
-    p_to_correct.sort(key=lambda x: x[0])
+    p_to_correct.sort(key=lambda x: float(x[0]))
     for rank, (p_raw, t_type, r) in enumerate(p_to_correct):
         alpha_hb = 0.05 / (m_tests - rank)
         sig = p_raw < alpha_hb
@@ -273,8 +274,8 @@ def run_post_hoc_analysis():
         margin_diff = r["bnd_lift_mean"] - r["int_lift_mean"]
         diff_color = "green" if margin_diff > 0 else "red"
         t1.add_row(
-            r["model"],
-            r["graph"],
+            str(r["model"]),
+            str(r["graph"]),
             f"{r['mean_lift']:+.4f} ± {r['std_lift']:.4f}",
             f"{r['int_lift_mean']:+.4f}",
             f"{r['bnd_lift_mean']:+.4f}",
@@ -303,8 +304,8 @@ def run_post_hoc_analysis():
             p_val_str = f"p_tost={r['p_tost']:.2e}"
 
         t2.add_row(
-            r["model"],
-            r["graph"],
+            str(r["model"]),
+            str(r["graph"]),
             ci_str,
             p_val_str,
             f"[{dec_color}]{r['decision']}[/{dec_color}]",

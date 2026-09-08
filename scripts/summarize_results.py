@@ -36,7 +36,9 @@ def load_all_results(results_dir: Path):
                 m = json.load(f)
             mlp_baselines[seed] = m["test"]["macro_f1"]
 
-    data = defaultdict(lambda: {"gnn": [], "mlp": [], "lift": [], "time": [], "epoch": []})
+    data: dict[tuple[str, str], dict[str, list[float]]] = defaultdict(
+        lambda: {"gnn": [], "mlp": [], "lift": [], "time": [], "epoch": []}
+    )
     models = ["gcn", "gat", "gin", "graphsage"]
     graphs = [
         "spatial_knn_k6",

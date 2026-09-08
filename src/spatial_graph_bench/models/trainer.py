@@ -87,7 +87,7 @@ def run_benchmark_training(
             section_ids=feature_bundle.section_ids_test,
         )
 
-        history = []
+        history: list[dict[str, float]] = []
         best_val_f1 = val_summary.macro_f1
         best_epoch = 1
 

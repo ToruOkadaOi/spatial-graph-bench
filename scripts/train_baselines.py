@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
@@ -35,7 +36,7 @@ console = Console()
 def train_baselines_for_split(
     dataset_name: str,
     split_id: str,
-    seeds: list[int] = (42, 43, 44, 45, 46, 47, 48, 49, 50, 51),
+    seeds: Sequence[int] = (42, 43, 44, 45, 46, 47, 48, 49, 50, 51),
     max_epochs: int = 200,
     patience: int = 15,
     lr: float = 1e-3,

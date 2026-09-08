@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Sequence
 
 from rich.console import Console
 from rich.table import Table
@@ -29,7 +30,7 @@ console = Console()
 def build_graphs_for_split(
     dataset_name: str,
     split_id: str,
-    k_values: list[int] = (6, 12),
+    k_values: Sequence[int] = (6, 12),
     bipartite_k: int = 20,
     seed: int = 42,
 ) -> list[tuple[str, str, int, int, str, bool]]:
