@@ -1,0 +1,28 @@
+# ==============================================================================
+# GPU PILOT SMOKE TEST: Stereo-seq Axolotl Telencephalon 3-Stage Benchmark
+# Purpose: Local smoke verification of 4 GNN architectures on CPU.
+# Total Runs: 4 models × 1 graph × 1 seed = 4 runs (~2-3 minutes on Mac CPU)
+# ==============================================================================
+
+batch_id: stereoseq_axolotl_pilot_smoke
+dataset_name: stereoseq_axolotl_telencephalon
+split_id: developmental_three_stage
+
+models:
+  - gcn
+  - graphsage
+  - gat
+  - gin
+
+graphs:
+  - spatial_knn_k6
+
+seeds:
+  - 42
+
+training:
+  max_epochs: 15
+  patience: 5
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  device: cpu

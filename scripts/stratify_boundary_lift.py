@@ -55,10 +55,30 @@ def compute_boundary_mask(
     return is_boundary
 
 
-def run_post_hoc_analysis():
-    results_dir = Path("artifacts/results/merfish_mouse_spinal_cord/mouse_held_out_canonical")
-    prep_dir = Path("artifacts/preprocessed/merfish_mouse_spinal_cord/mouse_held_out_canonical")
-    split_file = Path("splits/merfish_mouse_spinal_cord/mouse_held_out_canonical.json")
+def run_post_hoc_analysis(
+    dataset_name: str = "merfish_mouse_spinal_cord",
+    split_id: str = "mouse_held_out_canonical",
+    percentile: float = 15.0,
+    epsilon: float | None = None,
+) -> list[dict[str, Any]]:
+    results_dir = Path(f"artifacts/results/{dataset_name}/{split_id}")
+    prep_dir = Path(f"artifacts/preprocessed/{dataset_name}/{split_id}")
+    split_file = Path(f"splits/{dataset_name}/{split_id}.json")
+    snapshot_dir = Path(f"audits/baselines_snapshot/{dataset_name}/{split_id}")
+
+    if not results_dir.is_dir():
+        raise FileNotFoundError(f"Results directory not found: {results_dir}")
+    if not prep_dir.is_dir():
+        raise FileNotFoundError(f"Preprocessed bundle directory not found: {prep_dir}")
+
+    # Determine parity threshold epsilon
+    if epsilon is None:
+        parity_file = snapshot_dir / "parity_band.json"
+        if parity_file.is_file():
+            pdata = json.loads(parity_file.read_text(encoding="utf-8"))
+            epsilon = float(pdata.get("parity_band_halfwidth", 0.0069))
+        else:
+            epsilon = 0.0069
 
     # Load preprocessed coordinates and labels
     coords = np.load(prep_dir / "spatial_test.npy")
@@ -79,11 +99,13 @@ def run_post_hoc_analysis():
     eval_mask = np.isin(y_true, eval_ids)
 
     # 1. Compute boundary mask
-    is_boundary = compute_boundary_mask(coords, sections, percentile=15.0)
+    is_boundary = compute_boundary_mask(coords, sections, percentile=percentile)
     int_mask = eval_mask & (~is_boundary)
     bnd_mask = eval_mask & is_boundary
 
-    console.print(f"[bold green]>>> Loaded {len(coords)} test cells:[/bold green]")
+    console.print(
+        f"[bold green]>>> Loaded {len(coords)} test cells for {dataset_name} ({split_id}):[/bold green]"
+    )
     console.print(
         f"  Interior evaluated cells: {int_mask.sum():,} ({int_mask.sum() / eval_mask.sum():.1%})"
     )
@@ -91,10 +113,24 @@ def run_post_hoc_analysis():
         f"  Boundary evaluated cells: {bnd_mask.sum():,} ({bnd_mask.sum() / eval_mask.sum():.1%})"
     )
 
-    # 2. Evaluate MLP baselines (10 seeds)
+    # 2. Evaluate MLP baselines (all available seeds)
     mlp_records = {}
-    for seed in range(42, 52):
+    available_mlp_seeds = [
+        seed
+        for seed in range(42, 52)
+        if (results_dir / f"mlp_none_seed{seed}" / "test_preds.npy").is_file()
+        or (snapshot_dir / f"mlp_none_seed{seed}" / "test_preds.npy").is_file()
+    ]
+    if not available_mlp_seeds:
+        raise FileNotFoundError(
+            f"No MLP baseline test_preds.npy found under {results_dir} or {snapshot_dir}"
+        )
+
+    for seed in available_mlp_seeds:
         mlp_run_dir = results_dir / f"mlp_none_seed{seed}"
+        if not (mlp_run_dir / "test_preds.npy").is_file():
+            mlp_run_dir = snapshot_dir / f"mlp_none_seed{seed}"
+
         preds = np.load(mlp_run_dir / "test_preds.npy")
 
         overall_f1 = f1_score(
@@ -113,7 +149,7 @@ def run_post_hoc_analysis():
             "boundary_f1": float(bnd_f1),
         }
 
-    # 3. Evaluate 28 GNN configurations (10 seeds each)
+    # 3. Evaluate GNN configurations
     models = ["gcn", "gat", "gin", "graphsage"]
     graphs = [
         "spatial_knn_k6",
@@ -126,7 +162,6 @@ def run_post_hoc_analysis():
     ]
 
     analysis_results: list[dict[str, Any]] = []
-    epsilon = 0.0069  # Pre-registered parity threshold
 
     for mod in models:
         for gr in graphs:
@@ -137,7 +172,7 @@ def run_post_hoc_analysis():
             gnn_interiors = []
             gnn_boundaries = []
 
-            for seed in range(42, 52):
+            for seed in available_mlp_seeds:
                 run_dir = results_dir / f"{mod}_{gr}_seed{seed}"
                 if not run_dir.exists():
                     continue
@@ -180,26 +215,33 @@ def run_post_hoc_analysis():
 
             arr_lift = np.array(overall_lifts)
             mean_lift = float(np.mean(arr_lift))
-            std_lift = float(np.std(arr_lift, ddof=1))
-            se = std_lift / np.sqrt(n)
+            std_lift = float(np.std(arr_lift, ddof=1)) if n > 1 else 0.0
+            se = std_lift / np.sqrt(n) if n > 1 and std_lift > 0 else 1e-6
 
-            # TOST tests: H01: Delta <= -eps, H02: Delta >= +eps
-            t1 = (mean_lift - (-epsilon)) / se
-            t2 = (mean_lift - epsilon) / se
-            p1 = 1.0 - stats.t.cdf(t1, df=n - 1)
-            p2 = stats.t.cdf(t2, df=n - 1)
-            p_tost = float(max(p1, p2))
+            if n > 1 and se > 1e-6:
+                # TOST tests: H01: Delta <= -eps, H02: Delta >= +eps
+                t1 = (mean_lift - (-epsilon)) / se
+                t2 = (mean_lift - epsilon) / se
+                p1 = 1.0 - stats.t.cdf(t1, df=n - 1)
+                p2 = stats.t.cdf(t2, df=n - 1)
+                p_tost = float(max(p1, p2))
 
-            # Directional hypothesis tests
-            # Superiority: H0: Delta <= eps
-            p_sup = float(1.0 - stats.t.cdf(t2, df=n - 1))
-            # Inferiority: H0: Delta >= -eps
-            p_inf = float(stats.t.cdf(t1, df=n - 1))
+                # Directional hypothesis tests
+                # Superiority: H0: Delta <= eps
+                p_sup = float(1.0 - stats.t.cdf(t2, df=n - 1))
+                # Inferiority: H0: Delta >= -eps
+                p_inf = float(stats.t.cdf(t1, df=n - 1))
 
-            # 90% Confidence Interval for TOST
-            t_crit_90 = stats.t.ppf(0.95, df=n - 1)
-            ci_90_low = mean_lift - t_crit_90 * se
-            ci_90_high = mean_lift + t_crit_90 * se
+                # 90% Confidence Interval for TOST
+                t_crit_90 = stats.t.ppf(0.95, df=n - 1)
+                ci_90_low = mean_lift - t_crit_90 * se
+                ci_90_high = mean_lift + t_crit_90 * se
+            else:
+                p_tost = 1.0
+                p_sup = 1.0
+                p_inf = 1.0
+                ci_90_low = mean_lift
+                ci_90_high = mean_lift
 
             int_arr = np.array(int_lifts)
             bnd_arr = np.array(bnd_lifts)
@@ -217,35 +259,34 @@ def run_post_hoc_analysis():
                     "ci_90_low": float(ci_90_low),
                     "ci_90_high": float(ci_90_high),
                     "int_lift_mean": float(np.mean(int_arr)),
-                    "int_lift_std": float(np.std(int_arr, ddof=1)),
                     "bnd_lift_mean": float(np.mean(bnd_arr)),
-                    "bnd_lift_std": float(np.std(bnd_arr, ddof=1)),
                     "p_tost": p_tost,
                     "p_sup": p_sup,
                     "p_inf": p_inf,
                 }
             )
 
-    # 4. Holm-Bonferroni correction over the 28 comparisons
-    # For inferiority (if negative) or superiority (if positive)
-    m_tests = len(analysis_results)
-    # Collect unadjusted p-values for testing hypothesis against parity band
-    p_to_correct: list[tuple[float, str, dict[str, Any]]] = []
-    for r in analysis_results:
-        if r["mean_lift"] > epsilon:
-            p_val = float(r["p_sup"])
-            test_type = "superiority"
-        elif r["mean_lift"] < -epsilon:
-            p_val = float(r["p_inf"])
-            test_type = "inferiority"
-        else:
-            p_val = float(r["p_tost"])
-            test_type = "equivalence"
-        p_to_correct.append((p_val, test_type, r))
+    if not analysis_results:
+        console.print("[yellow]No GNN runs found to analyze.[/yellow]")
+        return []
 
-    # Sort ascending
-    p_to_correct.sort(key=lambda x: float(x[0]))
-    for rank, (p_raw, t_type, r) in enumerate(p_to_correct):
+    # 4. Apply Holm-Bonferroni FWER correction across all evaluated configurations
+    m_tests = len(analysis_results)
+    indexed_results = []
+    for idx, r in enumerate(analysis_results):
+        min_p = min(r["p_tost"], r["p_sup"], r["p_inf"])
+        if min_p == r["p_sup"]:
+            t_type = "superiority"
+        elif min_p == r["p_inf"]:
+            t_type = "inferiority"
+        else:
+            t_type = "equivalence"
+        indexed_results.append((min_p, t_type, idx))
+
+    indexed_results.sort(key=lambda x: x[0])
+
+    for rank, (p_raw, t_type, orig_idx) in enumerate(indexed_results):
+        r = analysis_results[orig_idx]
         alpha_hb = 0.05 / (m_tests - rank)
         sig = p_raw < alpha_hb
         r["fwer_alpha"] = float(alpha_hb)
@@ -261,7 +302,7 @@ def run_post_hoc_analysis():
 
     # Display Table 1: Stratified Lift (Interior vs. Boundary)
     t1 = Table(
-        title="Post-Hoc Boundary Stratification: Interior vs. Boundary Lift (merfish_canonical)"
+        title=f"Post-Hoc Boundary Stratification: Interior vs. Boundary Lift ({dataset_name} / {split_id})"
     )
     t1.add_column("Model", style="cyan")
     t1.add_column("Graph Construction", style="magenta")
@@ -284,7 +325,9 @@ def run_post_hoc_analysis():
     console.print(t1)
 
     # Display Table 2: Formal TOST & Holm-Bonferroni Hypothesis Decisions
-    t2 = Table(title="Formal TOST & Holm-Bonferroni Hypothesis Decisions (Parity Margin ±0.0069)")
+    t2 = Table(
+        title=f"Formal TOST & Holm-Bonferroni Hypothesis Decisions (Parity Margin ±{epsilon:.4f})"
+    )
     t2.add_column("Model", style="cyan")
     t2.add_column("Graph Construction", style="magenta")
     t2.add_column("90% TOST CI", justify="center")
@@ -317,7 +360,26 @@ def run_post_hoc_analysis():
     with open(out_file, "w") as f:
         json.dump(analysis_results, f, indent=2)
     console.print(f"\n[bold green]✓ Post-hoc analysis saved to:[/bold green] {out_file}")
+    return analysis_results
+
+
+def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
+    parser.add_argument("--split", type=str, default="mouse_held_out_canonical")
+    parser.add_argument("--percentile", type=float, default=15.0)
+    parser.add_argument("--epsilon", type=float, default=None)
+    args = parser.parse_args()
+
+    run_post_hoc_analysis(
+        dataset_name=args.dataset,
+        split_id=args.split,
+        percentile=args.percentile,
+        epsilon=args.epsilon,
+    )
 
 
 if __name__ == "__main__":
-    run_post_hoc_analysis()
+    main()
