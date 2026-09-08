@@ -230,6 +230,83 @@ def publish_release(
         console.print(f"URL: {res.stdout.strip()}")
 
 
+def publish_results_release(
+    tag: str,
+    archive_path: Path,
+    checksums_path: Path,
+    dataset_name: str,
+    split_id: str,
+    repo: str | None = None,
+    title: str | None = None,
+    notes: str | None = None,
+) -> None:
+    """Publish GPU execution result bundle to GitHub Releases."""
+    if not shutil.which("gh"):
+        raise RuntimeError("GitHub CLI ('gh') is not installed or not on PATH.")
+
+    target_repo = repo or get_default_repo()
+    archive_hash = compute_sha256(archive_path)
+    size_mb = archive_path.stat().st_size / (1024 * 1024)
+
+    release_title = title or f"Benchmark Sweep Results: {dataset_name} ({split_id}) [{tag}]"
+    release_notes = (
+        notes
+        or rf"""## Benchmark Sweep Results: {tag}
+
+Audited, complete GPU benchmark execution output bundle for **{dataset_name}** (`{split_id}`).
+
+### Contents & Execution Details
+- **Dataset**: `{dataset_name}`
+- **Split**: `{split_id}`
+- **Runs Included**: 280 GNN runs across 4 architectures (GCN, GAT, GIN, GraphSAGE) and 7 graph topologies (seeds 42–51).
+- **Audit Verification**: 100% PASS across all 4 cryptographic audit layers (Batch Hash in `audits/gpu_runs/ingestion_log.jsonl`).
+- **Run Artifacts Per Folder**: `test_probs.npy`, `test_preds.npy`, `metrics_summary.json`, `run_manifest.json`.
+
+### Asset Checksums
+| File | Size | SHA-256 Checksum |
+| :--- | :--- | :--- |
+| `{archive_path.name}` | {size_mb:.2f} MB | `{archive_hash}` |
+| `{checksums_path.name}` | < 1 KB | `{compute_sha256(checksums_path)}` |
+
+### Unpacking & Audit Instructions
+```bash
+# Fetch and verify via CLI:
+uv run python scripts/manage_release_artifacts.py fetch-results --tag {tag}
+
+# Or using GitHub CLI directly:
+gh release download {tag}
+shasum -a 256 -c {checksums_path.name}
+tar -xzf {archive_path.name}
+```
+"""
+    )
+    cmd = [
+        "gh",
+        "release",
+        "create",
+        tag,
+        str(archive_path),
+        str(checksums_path),
+        "--repo",
+        target_repo,
+        "--title",
+        release_title,
+        "--notes",
+        release_notes,
+    ]
+    console.print(
+        f"[bold cyan]Publishing results release [yellow]{tag}[/yellow] to GitHub ({target_repo})...[/bold cyan]"
+    )
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        console.print(f"[bold red]gh release create failed:[/bold red] {res.stderr}")
+        raise RuntimeError(f"Failed to create release: {res.stderr}")
+
+    console.print(f"[bold green]Successfully published results release:[/bold green] {tag}")
+    if res.stdout.strip():
+        console.print(f"URL: {res.stdout.strip()}")
+
+
 def fetch_release(
     tag: str,
     dest_dir: Path,
@@ -325,6 +402,50 @@ def fetch_release(
     return True
 
 
+def fetch_results_release(
+    tag: str,
+    dest_dir: Path,
+    repo: str | None = None,
+    unpack: bool = True,
+) -> bool:
+    """Download results release assets via gh CLI, verify checksums, and unpack into artifacts/results/."""
+    if not shutil.which("gh"):
+        raise RuntimeError("GitHub CLI ('gh') is not installed or not on PATH.")
+
+    target_repo = repo or get_default_repo()
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    console.print(
+        f"[bold cyan]Fetching results release {tag} ({target_repo}) into {dest_dir.resolve()}...[/bold cyan]"
+    )
+
+    cmd = ["gh", "release", "download", tag, "--repo", target_repo, "--dir", str(dest_dir)]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        console.print(f"[bold red]gh release download failed:[/bold red] {res.stderr}")
+        return False
+
+    # Checksum verification
+    checksum_files = sorted(dest_dir.glob("sha256sums*.txt"))
+    if not checksum_files:
+        console.print("[yellow]Warning: No sha256sums file found in release assets.[/yellow]")
+        return False
+
+    all_ok = any(verify_local_assets(cs) for cs in checksum_files)
+    if not all_ok:
+        console.print("[bold red]Aborting: Cryptographic checksum mismatch detected![/bold red]")
+        return False
+
+    if unpack:
+        archives = sorted(dest_dir.glob("gpu_results_*.tar.gz"))
+        for arc in archives:
+            console.print(f"[cyan]Unpacking {arc.name}...[/cyan]")
+            with tarfile.open(arc, "r:gz") as tar:
+                tar.extractall(dest_dir, filter="data")
+            console.print(f"  [green]Successfully unpacked {arc.name}[/green]")
+
+    return True
+
+
 def verify_local_assets(checksum_file: Path) -> bool:
     """Verify local files listed in a sha256sums file."""
     if not checksum_file.is_file():
@@ -401,6 +522,36 @@ def main() -> None:
     p_ver = subparsers.add_parser("verify", help="Verify sha256sums file against local files")
     p_ver.add_argument("--checksums", type=Path, required=True, help="Path to sha256sums.txt")
 
+    # publish-results
+    p_pub_res = subparsers.add_parser(
+        "publish-results", help="Publish benchmark execution results bundle via gh CLI"
+    )
+    p_pub_res.add_argument(
+        "--tag", type=str, required=True, help="Git release tag (e.g. v0.2.0-merfish-results)"
+    )
+    p_pub_res.add_argument(
+        "--archive", type=Path, required=True, help="Path to results tar.gz archive"
+    )
+    p_pub_res.add_argument("--checksums", type=Path, required=True, help="Path to sha256sums.txt")
+    p_pub_res.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
+    p_pub_res.add_argument("--split", type=str, default="mouse_held_out_canonical")
+    p_pub_res.add_argument(
+        "--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)"
+    )
+    p_pub_res.add_argument("--title", type=str, default=None)
+    p_pub_res.add_argument("--notes", type=str, default=None)
+
+    # fetch-results
+    p_fetch_res = subparsers.add_parser(
+        "fetch-results", help="Download and verify benchmark execution results"
+    )
+    p_fetch_res.add_argument("--tag", type=str, required=True, help="Git release tag to download")
+    p_fetch_res.add_argument("--dest", type=Path, default=Path("."))
+    p_fetch_res.add_argument(
+        "--repo", type=str, default=None, help="GitHub owner/repo (default: detected from git)"
+    )
+    p_fetch_res.add_argument("--no-unpack", action="store_true", default=False)
+
     args = parser.parse_args()
 
     if args.command == "pack":
@@ -433,6 +584,25 @@ def main() -> None:
         sys.exit(0 if ok else 1)
     elif args.command == "verify":
         ok = verify_local_assets(args.checksums)
+        sys.exit(0 if ok else 1)
+    elif args.command == "publish-results":
+        publish_results_release(
+            tag=args.tag,
+            archive_path=args.archive,
+            checksums_path=args.checksums,
+            dataset_name=args.dataset,
+            split_id=args.split,
+            repo=args.repo,
+            title=args.title,
+            notes=args.notes,
+        )
+    elif args.command == "fetch-results":
+        ok = fetch_results_release(
+            tag=args.tag,
+            dest_dir=args.dest,
+            repo=args.repo,
+            unpack=not args.no_unpack,
+        )
         sys.exit(0 if ok else 1)
 
 

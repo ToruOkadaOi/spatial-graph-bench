@@ -1,0 +1,43 @@
+# ==============================================================================
+# GPU FULL STATISTICAL BATCH: Stereo-seq Axolotl Telencephalon 3-Stage Benchmark
+# Purpose: Pre-registered 10-seed evaluation across stages 44+54 -> 57.
+# Total Runs: 4 models × 7 graphs × 10 seeds = 280 runs (~1.5-2.5 hours on modern GPU)
+# ==============================================================================
+
+batch_id: stereoseq_axolotl_telencephalon_developmental_three_stage_full_sweep
+dataset_name: stereoseq_axolotl_telencephalon
+split_id: developmental_three_stage
+
+models:
+  - gcn
+  - graphsage
+  - gat
+  - gin
+
+graphs:
+  - spatial_knn_k6
+  - rewired_spatial_knn_k6
+  - shuffled_spatial_knn_k6
+  - spatial_knn_k12
+  - rewired_spatial_knn_k12
+  - shuffled_spatial_knn_k12
+  - bipartite_ref_k20
+
+seeds:
+  - 42
+  - 43
+  - 44
+  - 45
+  - 46
+  - 47
+  - 48
+  - 49
+  - 50
+  - 51
+
+training:
+  max_epochs: 200
+  patience: 15
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  device: cuda:0
