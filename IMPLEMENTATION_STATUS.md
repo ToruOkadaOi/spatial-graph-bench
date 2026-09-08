@@ -14,9 +14,9 @@ This document tracks execution progress, verification gate outcomes, and test co
 | **3** | Feature Pipelines A/B & Spatial Ignorance Audit | **COMPLETED** | Coordinate-shuffle test clean, manifests issued | Dual pipelines (strict vs platform-default); shuffle audit passed (max diff 0.0); MERFISH manifests issued. |
 | **4** | Graph Constructions, Controls & Validators | **COMPLETED** | Construction manifests chained, connectivity verified per variant | Spatial k-NN (k=6, 12), rewired & shuffled controls, Variant A bipartite; 0 cross-partition, 0 cross-section edges. |
 | **5** | Baseline Model Training (MLP $\ge 10$ seeds, RF) | **COMPLETED** | Canonical baselines frozen in `audits/baselines_snapshot/` | Tuned MLP (10 seeds, $\mu=0.5273 \pm 0.0035$), parity band $\pm 0.0069$, RF ($0.4683$). |
-| **6** | GNN Sweeps on GPU via Handoff & Ingestion | **IN PROGRESS** | All runs PASS or quarantined with notes | Input bundle published (`v0.1.0-merfish-inputs`); GPU handoff batch emitted. |
-| **7** | Post-Hoc Analysis & Anti-Circularity Audit | **PENDING** | Circular metrics demoted per §3.3 | Matched lift, TOST equivalence test, boundary stratification. |
-| **8** | Reports & Cross-Dataset Synthesis | **PENDING** | Generated docs pass stale-reference guard | Canonical tables exported to markdown & Zenodo archival. |
+| **6** | GNN Sweeps on GPU via Handoff & Ingestion | **COMPLETED** | All runs PASS or quarantined with notes | 280 GNN runs executed on remote GPU, verified across 4 cryptographic layers, 100% PASS, zero quarantined. |
+| **7** | Post-Hoc Analysis & Anti-Circularity Audit | **COMPLETED** | Circular metrics demoted per §3.3 | Matched lift, TOST equivalence testing (Holm-Bonferroni FWER), boundary vs interior stratification executed. |
+| **8** | Reports & Cross-Dataset Synthesis | **IN PROGRESS** | Generated docs pass stale-reference guard | Canonical MERFISH results generated; cross-platform synthesis pending remaining datasets. |
 
 ---
 
@@ -24,7 +24,7 @@ This document tracks execution progress, verification gate outcomes, and test co
 
 | Platform / Dataset | Phase 0 (Census) | Phase 2 (Splits) | Phase 3 (Prep) | Phase 4 (Graphs) | Phase 5 (Baselines) | Phase 6 (GNNs) | Phase 7 (Lift) | Phase 8 (Report) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1. MERFISH Mouse Spinal Cord** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :hourglass_flowing_sand: | `PENDING` | `PENDING` |
+| **1. MERFISH Mouse Spinal Cord** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :hourglass_flowing_sand: |
 | **2. Open-ST Mouse Olfactory** | :white_check_mark: | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` |
 | **3. Xenium Human Breast Cancer** | :white_check_mark: | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` |
 | **4. Stereo-seq Axolotl Brain** | :white_check_mark: | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` | `[ ] #todo` |
@@ -125,26 +125,26 @@ This document tracks execution progress, verification gate outcomes, and test co
 
 ---
 
-## Phase 6 Execution Checklist (IN PROGRESS)
+## Phase 6 Execution Checklist (COMPLETED FOR MERFISH)
 
 - [x] Implemented `scripts/manage_release_artifacts.py` for GitHub Releases distribution.
 - [x] Published initial release [`v0.1.0-merfish-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-merfish-inputs) (16.09 MB verified tarball).
 - [x] Generated GPU worker configurations: `configs/gpu_batch_merfish_canonical_pilot.yaml` (28 runs, 1 seed) and `configs/gpu_batch_merfish_canonical_full.yaml` (280 runs, 10 seeds).
 - [x] Documented GPU execution protocol in `HANDOFF_TO_GPU.md` and `REPRODUCE.md` with two-stage pilot and full workflows.
-- [ ] `#todo` MERFISH: Execute GNN sweep (GCN, GraphSAGE, GAT, GIN) on GPU worker instance across all 7 topologies.
-- [ ] `#todo` MERFISH: Run `scripts/package_gpu_results.py` and upload `gpu_results_merfish_canonical.tar.gz`.
-- [ ] `#todo` MERFISH: Ingest delivery bundle on CPU node via `scripts/receive_gpu_delivery.py` and verify all 4 audit layers.
+- [x] MERFISH: Executed GNN sweep (GCN, GraphSAGE, GAT, GIN) on vast.ai GPU instance across all 7 topologies (280 runs, 10 seeds 42–51).
+- [x] MERFISH: Packaged GPU results via `scripts/package_gpu_results.py` into `gpu_results_merfish_canonical.tar.gz`.
+- [x] MERFISH: Ingested delivery bundle on CPU node via `scripts/receive_gpu_delivery.py` and passed all 4 cryptographic audit layers (100% PASS, zero quarantined).
 - [ ] `#todo` Open-ST / Xenium / Stereo-seq: Emit batch configs and execute GPU sweeps.
 
 ---
 
-## Phase 7 Execution Checklist (PENDING)
+## Phase 7 Execution Checklist (COMPLETED FOR MERFISH)
 
-- [ ] `#todo` Compute matched graph lift ($\Delta \text{Macro-F1} = \text{F1}_{\text{GNN}} - \text{F1}_{\text{MLP}}$) for every model/graph combination.
-- [ ] `#todo` Perform Two One-Sided Tests (TOST) for equivalence against $\epsilon = 0.0069$ per pre-registered §3.1 decision rule.
-- [ ] `#todo` Execute boundary vs. interior margin cell stratification via `scripts/stratify_boundary_lift.py`.
-- [ ] `#todo` Evaluate negative controls (rewired and coordinate-shuffled) to detect topological artifacts.
-- [ ] `#todo` Log all statistical outcomes in immutable audit ledger `audits/gpu_runs/ingestion_log.jsonl`.
+- [x] Computed matched graph lift ($\Delta \text{Macro-F1} = \text{F1}_{\text{GNN}} - \text{F1}_{\text{MLP}}$) for all 28 model/graph combinations across 10 independent seeds.
+- [x] Performed Two One-Sided Tests (TOST) for equivalence against $\epsilon = 0.0069$ with Holm–Bonferroni FWER control (§3.1).
+- [x] Executed tissue boundary margin vs. deep interior cell stratification via `scripts/stratify_boundary_lift.py` (§6.3).
+- [x] Evaluated negative controls (rewired and coordinate-shuffled) to verify edge-dependency and isolate topological smoothing artifacts.
+- [x] Recorded immutable audit ledger in `audits/gpu_runs/ingestion_log.jsonl` and committed to git.
 
 ---
 
