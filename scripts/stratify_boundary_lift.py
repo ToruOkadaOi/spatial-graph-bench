@@ -220,17 +220,17 @@ def run_post_hoc_analysis(
 
             if n > 1 and se > 1e-6:
                 # TOST tests: H01: Delta <= -eps, H02: Delta >= +eps
-                t1 = (mean_lift - (-epsilon)) / se
-                t2 = (mean_lift - epsilon) / se
-                p1 = 1.0 - stats.t.cdf(t1, df=n - 1)
-                p2 = stats.t.cdf(t2, df=n - 1)
+                t_stat1 = (mean_lift - (-epsilon)) / se
+                t_stat2 = (mean_lift - epsilon) / se
+                p1 = 1.0 - stats.t.cdf(t_stat1, df=n - 1)
+                p2 = stats.t.cdf(t_stat2, df=n - 1)
                 p_tost = float(max(p1, p2))
 
                 # Directional hypothesis tests
                 # Superiority: H0: Delta <= eps
-                p_sup = float(1.0 - stats.t.cdf(t2, df=n - 1))
+                p_sup = float(1.0 - stats.t.cdf(t_stat2, df=n - 1))
                 # Inferiority: H0: Delta >= -eps
-                p_inf = float(stats.t.cdf(t1, df=n - 1))
+                p_inf = float(stats.t.cdf(t_stat1, df=n - 1))
 
                 # 90% Confidence Interval for TOST
                 t_crit_90 = stats.t.ppf(0.95, df=n - 1)
@@ -301,20 +301,20 @@ def run_post_hoc_analysis(
             r["decision"] = "INCONCLUSIVE / PARITY"
 
     # Display Table 1: Stratified Lift (Interior vs. Boundary)
-    t1 = Table(
+    table_strat = Table(
         title=f"Post-Hoc Boundary Stratification: Interior vs. Boundary Lift ({dataset_name} / {split_id})"
     )
-    t1.add_column("Model", style="cyan")
-    t1.add_column("Graph Construction", style="magenta")
-    t1.add_column("Overall Lift (Δ)", justify="right")
-    t1.add_column("Interior Lift (Δ_int)", justify="right")
-    t1.add_column("Boundary Lift (Δ_bnd)", justify="right")
-    t1.add_column("Margin Effect (Δ_bnd - Δ_int)", justify="right", style="bold")
+    table_strat.add_column("Model", style="cyan")
+    table_strat.add_column("Graph Construction", style="magenta")
+    table_strat.add_column("Overall Lift (Δ)", justify="right")
+    table_strat.add_column("Interior Lift (Δ_int)", justify="right")
+    table_strat.add_column("Boundary Lift (Δ_bnd)", justify="right")
+    table_strat.add_column("Margin Effect (Δ_bnd - Δ_int)", justify="right", style="bold")
 
     for r in analysis_results:
         margin_diff = r["bnd_lift_mean"] - r["int_lift_mean"]
         diff_color = "green" if margin_diff > 0 else "red"
-        t1.add_row(
+        table_strat.add_row(
             str(r["model"]),
             str(r["graph"]),
             f"{r['mean_lift']:+.4f} ± {r['std_lift']:.4f}",
@@ -322,17 +322,17 @@ def run_post_hoc_analysis(
             f"{r['bnd_lift_mean']:+.4f}",
             f"[{diff_color}]{margin_diff:+.4f}[/{diff_color}]",
         )
-    console.print(t1)
+    console.print(table_strat)
 
     # Display Table 2: Formal TOST & Holm-Bonferroni Hypothesis Decisions
-    t2 = Table(
+    table_tost = Table(
         title=f"Formal TOST & Holm-Bonferroni Hypothesis Decisions (Parity Margin ±{epsilon:.4f})"
     )
-    t2.add_column("Model", style="cyan")
-    t2.add_column("Graph Construction", style="magenta")
-    t2.add_column("90% TOST CI", justify="center")
-    t2.add_column("Raw p-value", justify="right")
-    t2.add_column("FWER Decision (α=0.05)", justify="center", style="bold")
+    table_tost.add_column("Model", style="cyan")
+    table_tost.add_column("Graph Construction", style="magenta")
+    table_tost.add_column("90% TOST CI", justify="center")
+    table_tost.add_column("Raw p-value", justify="right")
+    table_tost.add_column("FWER Decision (α=0.05)", justify="center", style="bold")
 
     for r in analysis_results:
         ci_str = f"[{r['ci_90_low']:+.4f}, {r['ci_90_high']:+.4f}]"
@@ -346,14 +346,14 @@ def run_post_hoc_analysis(
             dec_color = "yellow"
             p_val_str = f"p_tost={r['p_tost']:.2e}"
 
-        t2.add_row(
+        table_tost.add_row(
             str(r["model"]),
             str(r["graph"]),
             ci_str,
             p_val_str,
             f"[{dec_color}]{r['decision']}[/{dec_color}]",
         )
-    console.print(t2)
+    console.print(table_tost)
 
     # Save output
     out_file = results_dir / "post_hoc_summary.json"
