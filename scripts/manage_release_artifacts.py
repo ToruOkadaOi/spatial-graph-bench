@@ -14,8 +14,12 @@ import sys
 import tarfile
 from pathlib import Path
 
-# Add src to sys.path so the script can be run directly
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+# Add repository root and src to sys.path so the script can be run directly
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+if str(_REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT / "src"))
 
 from rich.console import Console
 from rich.table import Table
@@ -384,7 +388,10 @@ def fetch_release(
             console.print(f"  [green]Successfully unpacked {arc.name}[/green]")
 
         if validate:
-            from scripts.validate_artifacts import validate_all_artifacts
+            try:
+                from scripts.validate_artifacts import validate_all_artifacts
+            except ImportError:
+                from validate_artifacts import validate_all_artifacts  # type: ignore[no-redef]
 
             ds = dataset_name or "merfish_mouse_spinal_cord"
             sp = split_id or "mouse_held_out_canonical"
