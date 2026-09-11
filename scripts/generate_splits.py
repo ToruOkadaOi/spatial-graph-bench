@@ -194,6 +194,53 @@ def generate_stereoseq_splits() -> None:
         logger.info("Saved Stereo-seq 3-stage split: %s", out_three_stage)
 
 
+def generate_openst_splits() -> None:
+    paths = ArtifactPaths.default()
+    p3d = paths.raw_data_dir / "openst_human_lymph_node" / "GSE251926_metastatic_lymph_node_3d.h5ad"
+    if not p3d.is_file():
+        raise FileNotFoundError(f"Open-ST 3D raw file missing: {p3d}")
+
+    logger.info("Loading Open-ST 3D dataset: %s", p3d)
+    a = ad.read_h5ad(p3d, backed="r")
+    obs = a.obs[["n_section", "annotation"]].copy()
+
+    # Filter strictly to Section 6 (reference) and Section 19 (query)
+    obs = obs[obs["n_section"].isin([6, 19])].copy()
+    obs = obs[obs["annotation"] != "unknown"].copy()
+
+    # Ensure shared classes
+    s6_classes = set(obs[obs["n_section"] == 6]["annotation"].value_counts().index)
+    s19_classes = set(obs[obs["n_section"] == 19]["annotation"].value_counts().index)
+    shared_classes = sorted(s6_classes & s19_classes)
+    obs = obs[obs["annotation"].isin(shared_classes)].copy()
+    obs["section_str"] = obs["n_section"].astype(str)
+    obs["cell_id"] = obs.index.astype(str)
+
+    canonical_cfg = SplitConfig(
+        dataset_name="openst_human_lymph_node",
+        split_id="section_held_out_canonical",
+        hierarchy=SplitHierarchy.SECTION_HELD_OUT,
+        seed=42,
+        train_groups=["6"],
+        val_groups=[],
+        val_ratio_within_train=0.2,
+        test_groups=["19"],
+        group_column="section_str",
+    )
+
+    canonical_split = create_split_definition(
+        obs,
+        canonical_cfg,
+        cell_id_col="cell_id",
+        label_col="annotation",
+    )
+    out_canonical = paths.dataset_split_file(
+        "openst_human_lymph_node", "section_held_out_canonical"
+    )
+    canonical_split.save_json(out_canonical)
+    logger.info("Saved Open-ST canonical split: %s", out_canonical)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
@@ -203,5 +250,7 @@ if __name__ == "__main__":
         generate_merfish_splits()
     elif args.dataset == "stereoseq_axolotl_telencephalon":
         generate_stereoseq_splits()
+    elif args.dataset == "openst_human_lymph_node":
+        generate_openst_splits()
     else:
         raise ValueError(f"Unknown dataset: {args.dataset}")

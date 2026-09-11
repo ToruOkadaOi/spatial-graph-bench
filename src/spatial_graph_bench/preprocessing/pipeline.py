@@ -70,6 +70,19 @@ def run_feature_pipeline(
         X_test_norm = X_test_raw.multiply(scale_factors_test[:, None]).tocsr()
         X_test_norm.data = np.log1p(X_test_norm.data)
 
+        # Highly Variable Gene (HVG) selection strictly on training partition
+        if config.n_hvg is not None and config.n_hvg < X_train_norm.shape[1]:
+            logger.info("Selecting top %d HVGs strictly on training partition...", config.n_hvg)
+            X_tr_sq = X_train_norm.copy()
+            X_tr_sq.data **= 2
+            mean_sq = np.asarray(X_tr_sq.mean(axis=0)).ravel()
+            mean = np.asarray(X_train_norm.mean(axis=0)).ravel()
+            gene_var = mean_sq - mean**2
+            top_hvg_idx = np.sort(np.argsort(gene_var)[-config.n_hvg :])
+            X_train_norm = X_train_norm[:, top_hvg_idx]
+            X_val_norm = X_val_norm[:, top_hvg_idx]
+            X_test_norm = X_test_norm[:, top_hvg_idx]
+
         # Convert to dense for PCA
         X_tr_dense = X_train_norm.toarray()
         X_va_dense = X_val_norm.toarray()
@@ -89,6 +102,20 @@ def run_feature_pipeline(
         X_pca_test = pca.transform(X_te_scaled)
     else:
         # Platform default Version B
+        if config.n_hvg is not None and config.n_hvg < X_all.shape[1]:
+            logger.info(
+                "Selecting top %d HVGs strictly on training partition for Version B...",
+                config.n_hvg,
+            )
+            X_tr_raw = X_all[train_idx]
+            X_tr_sq = X_tr_raw.copy()
+            X_tr_sq.data **= 2
+            mean_sq = np.asarray(X_tr_sq.mean(axis=0)).ravel()
+            mean = np.asarray(X_tr_raw.mean(axis=0)).ravel()
+            gene_var = mean_sq - mean**2
+            top_hvg_idx = np.sort(np.argsort(gene_var)[-config.n_hvg :])
+            X_all = X_all[:, top_hvg_idx]
+
         X_dense = X_all.toarray()
         pca = PCA(n_components=min(config.n_pca_components, X_dense.shape[1]), random_state=42)
         X_pca_train = pca.fit_transform(X_dense[train_idx])

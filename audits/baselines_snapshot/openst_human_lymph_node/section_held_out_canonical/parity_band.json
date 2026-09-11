@@ -1,0 +1,14 @@
+{
+  "dataset_name": "openst_human_lymph_node",
+  "split_id": "section_held_out_canonical",
+  "num_mlp_seeds": 10,
+  "mlp_mean_test_macro_f1": 0.39455771424812924,
+  "mlp_sigma_test_macro_f1": 0.002685423556022757,
+  "parity_band_halfwidth": 0.005370847112045514,
+  "parity_band_interval": [
+    0.38918686713608375,
+    0.39992856136017474
+  ],
+  "tost_equivalence_margin_epsilon": 0.005370847112045514,
+  "rf_test_macro_f1": 0.3364625217856925
+}

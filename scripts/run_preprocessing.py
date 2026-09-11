@@ -178,6 +178,74 @@ def process_stereoseq_features(split_id: str = "replicate_held_out_canonical") -
     logger.info("Feature manifest hash: %s", bundle_a.manifest.compute_manifest_hash())
 
 
+def process_openst_features(split_id: str = "section_held_out_canonical") -> None:
+    paths = ArtifactPaths.default()
+    split_file = paths.dataset_split_file("openst_human_lymph_node", split_id)
+    p3d = paths.raw_data_dir / "openst_human_lymph_node" / "GSE251926_metastatic_lymph_node_3d.h5ad"
+
+    if not split_file.is_file():
+        raise FileNotFoundError(f"Split file not found: {split_file}")
+    if not p3d.is_file():
+        raise FileNotFoundError(f"Open-ST 3D raw file not found: {p3d}")
+
+    split = SplitDefinition.load_json(split_file)
+    logger.info("Loading Open-ST split: %s", split_id)
+    all_split_cells = set(split.train_cell_ids + split.val_cell_ids + split.test_cell_ids)
+
+    logger.info("Opening Open-ST 3D dataset in backed mode: %s", p3d)
+    a = ad.read_h5ad(p3d, backed="r")
+
+    isin_mask = a.obs.index.astype(str).isin(all_split_cells)
+    keep_indices = np.where(isin_mask)[0]
+    logger.info("Retrieved %d matched cells from 3D dataset", len(keep_indices))
+
+    obs_sub = a.obs.iloc[keep_indices].copy()
+    obs_sub["section_str"] = obs_sub["n_section"].astype(str)
+    obs_sub.index = obs_sub.index.astype(str)
+
+    spatial_sub = a.obsm["spatial"][keep_indices].astype(np.float32)
+    counts_sub = a.layers["raw"][keep_indices]
+    if not sparse.issparse(counts_sub):
+        counts_sub = sparse.csr_matrix(counts_sub)
+
+    config_a = PreprocessingConfig(
+        version=PreprocessingPipelineVersion.STRICT_A,
+        n_pca_components=50,
+        n_hvg=min(2000, counts_sub.shape[1]),
+    )
+
+    logger.info("Executing mandatory coordinate-shuffle test for Version A...")
+    audit_passed = verify_spatial_ignorance(
+        X_counts=counts_sub,
+        obs=obs_sub,
+        spatial_coords=spatial_sub,
+        split=split,
+        config=config_a,
+        label_col="annotation",
+        section_col="section_str",
+    )
+    if not audit_passed:
+        raise RuntimeError(
+            "Coordinate-shuffle audit FAILED! Spatial information leaked into features."
+        )
+
+    logger.info("Coordinate-shuffle test passed! Building Version A feature bundle...")
+    bundle_a = run_feature_pipeline(
+        X_counts=counts_sub,
+        obs=obs_sub,
+        spatial_coords=spatial_sub,
+        split=split,
+        config=config_a,
+        label_col="annotation",
+        section_col="section_str",
+    )
+
+    out_dir_a = paths.dataset_preprocessed_dir("openst_human_lymph_node", split_id)
+    bundle_a.save(out_dir_a)
+    logger.info("Saved Version A preprocessed bundle: %s", out_dir_a)
+    logger.info("Feature manifest hash: %s", bundle_a.manifest.compute_manifest_hash())
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
@@ -188,5 +256,7 @@ if __name__ == "__main__":
         process_merfish_features(split_id=args.split)
     elif args.dataset == "stereoseq_axolotl_telencephalon":
         process_stereoseq_features(split_id=args.split)
+    elif args.dataset == "openst_human_lymph_node":
+        process_openst_features(split_id=args.split)
     else:
         raise ValueError(f"Unknown dataset: {args.dataset}")

@@ -46,9 +46,11 @@
         {
           "filename": "GSE251926_metastatic_lymph_node_3d.h5ad.gz",
           "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE251nnn/GSE251926/suppl/GSE251926_metastatic_lymph_node_3d.h5ad.gz",
-          "size_bytes": 2349602965,
+          "size_bytes": 2309204446,
+          "sha256": "e9ef3b5f8aa27d9db7c96272b84ba6723bd6af138b978e4c5922586baed28925",
           "raw_data_snapshot_id": "data/raw/openst_human_lymph_node/GSE251926_metastatic_lymph_node_3d.h5ad.gz",
-          "notes": "Consolidated 3D h5ad with 19 serial sections, ~15 annotated cell types."
+          "verified": true,
+          "notes": "Consolidated 3D h5ad with 19 serial sections, ~15 annotated cell types. Gate G4 verified."
         },
         {
           "filename": "GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
