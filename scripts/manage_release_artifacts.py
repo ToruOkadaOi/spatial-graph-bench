@@ -337,7 +337,15 @@ def fetch_release(
         return False
 
     # Verify checksums
-    checksum_files = sorted(dest_dir.glob("sha256sums*.txt"))
+    if dataset_name and split_id:
+        checksum_files = sorted(dest_dir.glob(f"sha256sums_{dataset_name}_{split_id}*.txt"))
+        if not checksum_files:
+            checksum_files = sorted(dest_dir.glob(f"sha256sums*{dataset_name}*.txt"))
+        if not checksum_files:
+            checksum_files = sorted(dest_dir.glob("sha256sums*.txt"))
+    else:
+        checksum_files = sorted(dest_dir.glob("sha256sums*.txt"))
+
     if not checksum_files:
         console.print("[yellow]Warning: No sha256sums*.txt found in release assets.[/yellow]")
         return False
@@ -380,7 +388,14 @@ def fetch_release(
         return False
 
     if unpack:
-        archives = sorted(dest_dir.glob("artifacts_*.tar.gz"))
+        if dataset_name and split_id:
+            archives = sorted(dest_dir.glob(f"artifacts_{dataset_name}_{split_id}*.tar.gz"))
+            if not archives:
+                archives = sorted(dest_dir.glob(f"artifacts*{dataset_name}*.tar.gz"))
+            if not archives:
+                archives = sorted(dest_dir.glob("artifacts_*.tar.gz"))
+        else:
+            archives = sorted(dest_dir.glob("artifacts_*.tar.gz"))
         for arc in archives:
             console.print(f"[cyan]Unpacking {arc.name}...[/cyan]")
             with tarfile.open(arc, "r:gz") as tar:

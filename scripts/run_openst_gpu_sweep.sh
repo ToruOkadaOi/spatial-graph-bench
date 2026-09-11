@@ -53,6 +53,7 @@ if [ ! -d "artifacts/preprocessed/${DATASET}/${SPLIT}" ] || [ ! -d "artifacts/gr
         tar -xzf "${LOCAL_TAR}"
     elif command -v gh &> /dev/null; then
         echo ">>> Fetching certified input bundle (${INPUT_TAG}) via GitHub CLI..."
+        rm -f sha256sums*.txt
         PYTHONPATH=src:. uv run python scripts/manage_release_artifacts.py fetch \
             --tag "${INPUT_TAG}" \
             --dataset "${DATASET}" \
