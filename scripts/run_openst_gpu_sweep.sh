@@ -66,7 +66,7 @@ if [ ! -d "artifacts/preprocessed/${DATASET}/${SPLIT}" ] || [ ! -d "artifacts/gr
         echo " Choose ONE of the following options:"
         echo ""
         echo " Option 1 (SCP from local machine - fastest, no GitHub login needed):"
-        echo "   scp dist/artifacts_${DATASET}_${SPLIT}_inputs.tar.gz user@this-gpu:\$(pwd)/dist/"
+        echo "   scp dist/artifacts_${DATASET}_${SPLIT}_inputs.tar.gz user@this-gpu:$(pwd)/dist/"
         echo "   Then re-run this script."
         echo ""
         echo " Option 2 (Authenticate GitHub CLI on this machine):"
@@ -87,13 +87,13 @@ PYTHONPATH=src uv run python scripts/validate_artifacts.py \
 
 # 4. Execute Full 280-Run GPU Sweep
 echo ">>> Launching 280-run GNN sweep..."
-START_TIME=\$(date +%s)
+START_TIME=$(date +%s)
 PYTHONPATH=src uv run python scripts/run_gnn_sweep.py \
     --batch-config "${CONFIG_FILE}"
-END_TIME=\$(date +%s)
-ELAPSED=\$((END_TIME - START_TIME))
+END_TIME=$(date +%s)
+ELAPSED=$((END_TIME - START_TIME))
 
-echo ">>> Sweep completed in \${ELAPSED} seconds (~\$((ELAPSED / 60)) minutes)."
+echo ">>> Sweep completed in ${ELAPSED} seconds (~$((ELAPSED / 60)) minutes)."
 
 # 5. Cryptographic Packaging & Audit Verification
 echo ">>> Auditing and packaging results delivery bundle..."
@@ -104,12 +104,12 @@ PYTHONPATH=src uv run python scripts/package_gpu_results.py \
     --output "${OUTPUT_ARCHIVE}"
 
 # 6. Generate Checksum File
-ARCHIVE_FILENAME=\$(basename "${OUTPUT_ARCHIVE}")
+ARCHIVE_FILENAME=$(basename "${OUTPUT_ARCHIVE}")
 cd dist
 if command -v shasum &> /dev/null; then
-    shasum -a 256 "\${ARCHIVE_FILENAME}" > "\$(basename "\${CHECKSUM_FILE}")"
+    shasum -a 256 "${ARCHIVE_FILENAME}" > "$(basename "${CHECKSUM_FILE}")"
 else
-    sha256sum "\${ARCHIVE_FILENAME}" > "\$(basename "\${CHECKSUM_FILE}")"
+    sha256sum "${ARCHIVE_FILENAME}" > "$(basename "${CHECKSUM_FILE}")"
 fi
 cd "${REPO_ROOT}"
 
