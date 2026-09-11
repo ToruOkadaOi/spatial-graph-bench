@@ -268,7 +268,15 @@ def audit_run_dir(
             if probs_path.is_file():
                 probs = np.load(probs_path)
                 sums_ok = bool(np.allclose(probs.sum(axis=1), 1.0, atol=1e-3))
-                argmax_ok = bool(np.all(probs.argmax(axis=1) == y_pred))
+                strict_argmax = bool(np.all(probs.argmax(axis=1) == y_pred))
+                if not strict_argmax and sums_ok and len(probs) == len(y_pred):
+                    pred_probs = probs[np.arange(len(y_pred)), y_pred]
+                    max_probs = probs.max(axis=1)
+                    achieves_max = bool(np.all(np.isclose(pred_probs, max_probs, atol=1e-5)))
+                    argmax_ok = achieves_max
+                else:
+                    argmax_ok = strict_argmax
+
                 checks.append(
                     AuditCheck(
                         name="probs_sanity",

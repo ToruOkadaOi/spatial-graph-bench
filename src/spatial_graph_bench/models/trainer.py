@@ -164,7 +164,7 @@ def run_benchmark_training(
             val_preds = va_logits.argmax(dim=1).cpu().numpy()
             te_logits = model(X_te)
             test_probs = torch.softmax(te_logits, dim=-1).cpu().numpy()
-            test_preds = te_logits.argmax(dim=1).cpu().numpy()
+            test_preds = test_probs.argmax(axis=-1)
 
         train_summary = compute_partition_metrics(
             feature_bundle.train_labels,
@@ -284,7 +284,7 @@ def run_benchmark_training(
             val_preds = final_out[val_mask].argmax(dim=1).cpu().numpy()
             te_out = final_out[te_mask]
             test_probs = torch.softmax(te_out, dim=-1).cpu().numpy()
-            test_preds = te_out.argmax(dim=1).cpu().numpy()
+            test_preds = test_probs.argmax(axis=-1)
 
         train_summary = compute_partition_metrics(
             feature_bundle.train_labels,

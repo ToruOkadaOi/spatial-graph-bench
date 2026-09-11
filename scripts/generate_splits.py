@@ -270,9 +270,7 @@ def generate_xenium_splits() -> None:
         cell_id_col="cell_id",
         label_col="celltype_plot",
     )
-    out_canonical = paths.dataset_split_file(
-        "xenium_mouse_kidney", "replicate_held_out_canonical"
-    )
+    out_canonical = paths.dataset_split_file("xenium_mouse_kidney", "replicate_held_out_canonical")
     canonical_split.save_json(out_canonical)
     logger.info("Saved Xenium canonical split: %s", out_canonical)
 

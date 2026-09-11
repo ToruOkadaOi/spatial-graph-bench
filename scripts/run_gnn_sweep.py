@@ -112,6 +112,64 @@ def run_gnn_sweep(
                 mlp_test_f1 = mlp_metrics["test"]["macro_f1"]
                 mlp_test_bacc = mlp_metrics["test"]["balanced_accuracy"]
 
+                # Check if run already completed and passed audit
+                run_id = f"{m_str.lower()}_{g_name}_seed{seed}"
+                run_dir = results_dir / run_id
+                gnn_manifest_file = run_dir / "run_manifest.json"
+                gnn_metrics_file = run_dir / "metrics_summary.json"
+
+                if gnn_manifest_file.is_file() and gnn_metrics_file.is_file():
+                    audit_rep = audit_run_dir(
+                        run_dir,
+                        prep_bundle=feature_bundle,
+                        graphs_root=paths.graphs_dir / dataset_name / split_id,
+                    )
+                    if audit_rep.verdict != AuditVerdict.FAIL:
+                        logger.info(
+                            "Found existing verified run: %s (skipping re-training)", run_id
+                        )
+                        gnn_manifest = RunManifest.model_validate_json(
+                            gnn_manifest_file.read_text(encoding="utf-8")
+                        )
+                        gnn_summaries = json.loads(gnn_metrics_file.read_text(encoding="utf-8"))
+                        lift_rec = compute_matched_graph_lift(
+                            gnn_manifest=gnn_manifest,
+                            mlp_manifest=mlp_manifest,
+                            gnn_macro_f1=gnn_summaries["test"]["macro_f1"],
+                            mlp_macro_f1=mlp_test_f1,
+                            gnn_balanced_acc=gnn_summaries["test"]["balanced_accuracy"],
+                            mlp_balanced_acc=mlp_test_bacc,
+                            parity_band_halfwidth=parity_band_halfwidth,
+                            interior_lift=None,
+                            boundary_lift=None,
+                            per_section_lifts=None,
+                            per_class_lifts=None,
+                        )
+                        results.append(
+                            {
+                                "model": m_str.upper(),
+                                "graph": g_name,
+                                "seed": seed,
+                                "run_id": gnn_manifest.run_id,
+                                "val_macro_f1": gnn_summaries["val"]["macro_f1"],
+                                "test_macro_f1": gnn_summaries["test"]["macro_f1"],
+                                "test_balanced_acc": gnn_summaries["test"]["balanced_accuracy"],
+                                "mlp_matched_f1": mlp_test_f1,
+                                "overall_lift": lift_rec.overall_graph_lift,
+                                "parity_classification": lift_rec.parity_classification,
+                                "best_epoch": gnn_manifest.best_epoch,
+                                "training_time_seconds": gnn_manifest.training_time_seconds,
+                            }
+                        )
+                        lift_str = f"{lift_rec.overall_graph_lift:+.4f} ({lift_rec.parity_classification.upper()})"
+                        console.print(
+                            f"  [cyan]{m_str.upper()}[/cyan] on [magenta]{g_name}[/magenta] (seed {seed}): "
+                            f"Test Macro-F1 = [bold]{gnn_summaries['test']['macro_f1']:.4f}[/bold], "
+                            f"MLP Baseline = {mlp_test_f1:.4f}, "
+                            f"Lift = [bold]{lift_str}[/bold] [green](CACHED PASS)[/green]"
+                        )
+                        continue
+
                 gnn_cfg = BenchmarkRunConfig(
                     model_type=model_type,
                     dataset_name=dataset_name,
