@@ -1,0 +1,43 @@
+# ==============================================================================
+# GPU FULL STATISTICAL BATCH: Open-ST Metastatic Human Lymph Node Benchmark
+# Purpose: Pre-registered 10-seed evaluation across Section 6 -> Section 19.
+# Total Runs: 4 models × 7 graphs × 10 seeds = 280 runs (~1.5-2.5 hours on modern GPU)
+# ==============================================================================
+
+batch_id: openst_human_lymph_node_section_held_out_canonical_full_sweep
+dataset_name: openst_human_lymph_node
+split_id: section_held_out_canonical
+
+models:
+  - gcn
+  - graphsage
+  - gat
+  - gin
+
+graphs:
+  - spatial_knn_k6
+  - rewired_spatial_knn_k6
+  - shuffled_spatial_knn_k6
+  - spatial_knn_k12
+  - rewired_spatial_knn_k12
+  - shuffled_spatial_knn_k12
+  - bipartite_ref_k20
+
+seeds:
+  - 42
+  - 43
+  - 44
+  - 45
+  - 46
+  - 47
+  - 48
+  - 49
+  - 50
+  - 51
+
+training:
+  max_epochs: 200
+  patience: 15
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  device: cuda:0
