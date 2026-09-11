@@ -55,14 +55,12 @@ This document tracks scientific ambiguities, protocol choices, design alternativ
 
 ---
 
-## 2. Open Technical Decisions (Scheduled for Phase 4–6)
+## 2. Settled Technical Decisions (Phases 4–6)
 
-### Open Decision 1: Spatial k-NN Neighbor Count ($k$) & Kernel Bandwidth
-- **Context**: Canonical spatial graphs require fixing $k$ for physical coordinate $k$-NN graphs.
-- **Proposed Default**: $k \in \{6, 12, 18\}$ representing first- and second-order spatial rings in 2D tissue, with $k=6$ as canonical.
-- **Owner Action**: Confirm $k=6$ as primary physical neighborhood or specify alternative grid.
+### Decision 10: Spatial k-NN Neighbor Count ($k$) & Topology Grid
+- **Status**: **RESOLVED & APPROVED**
+- **Final Specification**: Canonical spatial graphs evaluated at $k=6$ (first-order Voronoi / spatial ring) and $k=12$ (second-order ring). Topological negative controls mirror these exactly: `shuffled_spatial_knn_k6`, `shuffled_spatial_knn_k12`, `rewired_spatial_knn_k6`, `rewired_spatial_knn_k12`. Bipartite reference prototypes evaluated at $k=20$.
 
-### Open Decision 2: GNN Hidden Dimensions and Dropout Bounds for GPU Handoff
-- **Context**: Hyperparameter tuning grid for GCN, GraphSAGE, GAT, GIN during GPU sweep.
-- **Proposed Default**: Hidden dim $\in \{64, 128, 256\}$, layers $\in \{2, 3\}$, dropout $\in \{0.1, 0.3, 0.5\}$, learning rate $\in [10^{-4}, 10^{-2}]$, weight decay $\in [10^{-5}, 10^{-3}]$, 15-epoch early stopping.
-- **Owner Action**: Approve parameter bounds before emitting `HANDOFF_TO_GPU.md`.
+### Decision 11: GNN Architecture Hyperparameter Bounds
+- **Status**: **RESOLVED & APPROVED**
+- **Final Specification**: Standardized across all 4 platforms to ensure rigorous apples-to-apples comparison: 2 message passing layers, hidden dimension 128, dropout 0.2, learning rate $10^{-3}$, AdamW weight decay $10^{-4}$, cosine decay scheduling with 15-epoch early stopping on validation Macro-F1. Evaluated across 10 independent random seeds (42–51).
