@@ -45,13 +45,35 @@ if not cuda_ok:
     print('  [WARNING] CUDA is not available. Execution will run on CPU and take significantly longer.')
 "
 
-# 2. Fetch Frozen Input Bundle from GitHub Releases if missing
+# 2. Fetch Frozen Input Bundle from GitHub Releases or Local Dist
 if [ ! -d "artifacts/preprocessed/${DATASET}/${SPLIT}" ] || [ ! -d "artifacts/graphs/${DATASET}/${SPLIT}" ]; then
-    echo ">>> Fetching certified input bundle (${INPUT_TAG})..."
-    uv run python scripts/manage_release_artifacts.py fetch \
-        --tag "${INPUT_TAG}" \
-        --dataset "${DATASET}" \
-        --split "${SPLIT}"
+    LOCAL_TAR="dist/artifacts_${DATASET}_${SPLIT}_inputs.tar.gz"
+    if [ -f "${LOCAL_TAR}" ]; then
+        echo ">>> Found local input bundle (${LOCAL_TAR}). Unpacking..."
+        tar -xzf "${LOCAL_TAR}"
+    elif command -v gh &> /dev/null; then
+        echo ">>> Fetching certified input bundle (${INPUT_TAG}) via GitHub CLI..."
+        uv run python scripts/manage_release_artifacts.py fetch \
+            --tag "${INPUT_TAG}" \
+            --dataset "${DATASET}" \
+            --split "${SPLIT}"
+    else
+        echo "========================================================================"
+        echo " ERROR: Input artifacts missing under artifacts/ and 'gh' CLI is not found."
+        echo ""
+        echo " Because this repository is private, you need the input bundle (3.14 MB)."
+        echo " Choose ONE of the following options:"
+        echo ""
+        echo " Option 1 (SCP from local machine - fastest, no GitHub login needed):"
+        echo "   scp dist/artifacts_${DATASET}_${SPLIT}_inputs.tar.gz user@this-gpu:$(pwd)/dist/"
+        echo "   Then re-run this script."
+        echo ""
+        echo " Option 2 (Authenticate GitHub CLI on this machine):"
+        echo "   gh auth login"
+        echo "   Then re-run this script."
+        echo "========================================================================"
+        exit 1
+    fi
 else
     echo ">>> Input artifacts found locally."
 fi
