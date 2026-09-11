@@ -78,8 +78,20 @@ def plot_cross_modality_matrix() -> None:
     palette = sns.color_palette("Set2", n_colors=4)
 
     for ax, df_curr, title, mlp_mean, mlp_std in [
-        (axes[0], df_gnn_m, "A. MERFISH: Adult Mouse Spinal Cord (Heterophilic)", mlp_m_mean, mlp_m_std),
-        (axes[1], df_gnn_s, "B. Stereo-seq: Developing Axolotl Brain (Homophilic)", mlp_s_mean, mlp_s_std),
+        (
+            axes[0],
+            df_gnn_m,
+            "A. MERFISH: Adult Mouse Spinal Cord (Heterophilic)",
+            mlp_m_mean,
+            mlp_m_std,
+        ),
+        (
+            axes[1],
+            df_gnn_s,
+            "B. Stereo-seq: Developing Axolotl Brain (Homophilic)",
+            mlp_s_mean,
+            mlp_s_std,
+        ),
     ]:
         df_curr["Topology_Clean"] = df_curr["topology"].map(topo_map)
         df_curr["Model_Clean"] = df_curr["model"].str.upper()
@@ -92,7 +104,7 @@ def plot_cross_modality_matrix() -> None:
             mlp_mean + parity_half,
             color="#999999",
             alpha=0.25,
-            label=f"MLP Baseline (±2σ: [{mlp_mean-parity_half:.3f}, {mlp_mean+parity_half:.3f}])",
+            label=f"MLP Baseline (±2σ: [{mlp_mean - parity_half:.3f}, {mlp_mean + parity_half:.3f}])",
             zorder=1,
         )
         ax.axhline(mlp_mean, color="#666666", linestyle="--", linewidth=1.5, zorder=2)

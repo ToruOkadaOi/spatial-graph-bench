@@ -9,8 +9,12 @@ import pandas as pd
 
 
 def generate_latex_table() -> None:
-    merfish_ph = Path("artifacts/results/merfish_mouse_spinal_cord/mouse_held_out_canonical/post_hoc_summary.json")
-    stereoseq_ph = Path("artifacts/results/stereoseq_axolotl_telencephalon/developmental_three_stage/post_hoc_summary.json")
+    merfish_ph = Path(
+        "artifacts/results/merfish_mouse_spinal_cord/mouse_held_out_canonical/post_hoc_summary.json"
+    )
+    stereoseq_ph = Path(
+        "artifacts/results/stereoseq_axolotl_telencephalon/developmental_three_stage/post_hoc_summary.json"
+    )
 
     with open(merfish_ph) as f:
         m_data = json.load(f)
@@ -69,7 +73,7 @@ def generate_latex_table() -> None:
                 lift_val = row["mean_lift"]
                 lift_str = f"{lift_val:+.4f}"
                 ci_str = f"[{row['ci_90_low']:+.4f}, {row['ci_90_high']:+.4f}]"
-                p_tost_str = f"{row['p_tost']:.4f}" if row['p_tost'] >= 0.0001 else r"$<10^{-4}$"
+                p_tost_str = f"{row['p_tost']:.4f}" if row["p_tost"] >= 0.0001 else r"$<10^{-4}$"
                 decision = row["decision"]
 
                 # Formatting decision
@@ -82,15 +86,19 @@ def generate_latex_table() -> None:
 
                 m_label = model_labels[m]
                 t_label = topo_labels[topo]
-                lines.append(f" & {m_label} & {t_label} & {gnn_f1_str} & {lift_str} & {ci_str} & {p_tost_str} & {dec_str} \\\\")
+                lines.append(
+                    f" & {m_label} & {t_label} & {gnn_f1_str} & {lift_str} & {ci_str} & {p_tost_str} & {dec_str} \\\\"
+                )
             lines.append(r"\addlinespace[0.3em]")
         lines.append(r"\midrule")
 
-    lines.extend([
-        r"\bottomrule",
-        r"\end{tabular}",
-        r"\end{table*}",
-    ])
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular}",
+            r"\end{table*}",
+        ]
+    )
 
     out_file = Path("results/reports/table_benchmark_synthesis.tex")
     out_file.write_text("\n".join(lines), encoding="utf-8")

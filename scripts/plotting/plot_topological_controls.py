@@ -68,8 +68,10 @@ def plot_topological_controls() -> None:
     palette = {"Canonical": "#2ca02c", "Shuffled Coords": "#ff7f0e", "Rewired Edges": "#d62728"}
 
     for idx, (ax, k_str, panel_title) in enumerate(
-        [(axes[0], "k = 6", "A. Topological Disruption (k = 6 Neighbors)"),
-         (axes[1], "k = 12", "B. Topological Disruption (k = 12 Neighbors)")]
+        [
+            (axes[0], "k = 6", "A. Topological Disruption (k = 6 Neighbors)"),
+            (axes[1], "k = 12", "B. Topological Disruption (k = 12 Neighbors)"),
+        ]
     ):
         df_k = df_ctrl[df_ctrl["Neighborhood"] == k_str]
 
@@ -103,7 +105,9 @@ def plot_topological_controls() -> None:
         else:
             ax.set_ylabel("")
         ax.grid(axis="y", linestyle=":", alpha=0.6, zorder=0)
-        ax.legend(title="Graph Topology", loc="upper right", frameon=True, framealpha=0.9, fontsize=9.5)
+        ax.legend(
+            title="Graph Topology", loc="upper right", frameon=True, framealpha=0.9, fontsize=9.5
+        )
 
     plt.tight_layout()
 

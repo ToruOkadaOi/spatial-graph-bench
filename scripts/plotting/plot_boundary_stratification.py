@@ -92,7 +92,12 @@ def plot_boundary_analysis() -> None:
     for simplex in hull.simplices:
         ax_map.plot(sec_pts[simplex, 0], sec_pts[simplex, 1], "k--", linewidth=1.2, alpha=0.7)
 
-    ax_map.set_title("A. Tissue Convex Hull Geometric Margin (Stereo-seq Stage 57)", fontsize=12, fontweight="bold", pad=12)
+    ax_map.set_title(
+        "A. Tissue Convex Hull Geometric Margin (Stereo-seq Stage 57)",
+        fontsize=12,
+        fontweight="bold",
+        pad=12,
+    )
     ax_map.set_xlabel("Spatial X Coordinate (µm)", fontweight="bold")
     ax_map.set_ylabel("Spatial Y Coordinate (µm)", fontweight="bold")
     ax_map.set_aspect("equal")
@@ -123,15 +128,26 @@ def plot_boundary_analysis() -> None:
     )
 
     ax_bar.axhline(0, color="#333333", linestyle="-", linewidth=1.2, zorder=2)
-    ax_bar.set_title("B. Edge Degradation: Interior vs. Boundary Lift (spatial_knn_k12)", fontsize=12, fontweight="bold", pad=12)
+    ax_bar.set_title(
+        "B. Edge Degradation: Interior vs. Boundary Lift (spatial_knn_k12)",
+        fontsize=12,
+        fontweight="bold",
+        pad=12,
+    )
     ax_bar.set_xlabel("GNN Architecture", fontweight="bold", labelpad=8)
     ax_bar.set_ylabel("Matched Lift Δ over MLP", fontweight="bold", labelpad=8)
     ax_bar.grid(axis="y", linestyle=":", alpha=0.6, zorder=0)
-    ax_bar.legend(title="Tissue Zone", loc="upper right", frameon=True, framealpha=0.9, fontsize=9.5)
+    ax_bar.legend(
+        title="Tissue Zone", loc="upper right", frameon=True, framealpha=0.9, fontsize=9.5
+    )
 
     # Annotate margin penalty for GraphSAGE
-    sage_int = df_bar[(df_bar["Model"] == "GraphSAGE") & (df_bar["Region"] == "Deep Interior")]["Lift"].values[0]
-    sage_bnd = df_bar[(df_bar["Model"] == "GraphSAGE") & (df_bar["Region"] == "Boundary Margin")]["Lift"].values[0]
+    sage_int = df_bar[(df_bar["Model"] == "GraphSAGE") & (df_bar["Region"] == "Deep Interior")][
+        "Lift"
+    ].values[0]
+    sage_bnd = df_bar[(df_bar["Model"] == "GraphSAGE") & (df_bar["Region"] == "Boundary Margin")][
+        "Lift"
+    ].values[0]
     penalty = (sage_bnd - sage_int) * 100
     ax_bar.annotate(
         f"Margin Penalty:\n{penalty:.2f}% F1",

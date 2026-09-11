@@ -52,17 +52,21 @@
         },
         {
           "filename": "GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
-          "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE251nnn/GSE251926/suppl/GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
+          "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM7990nnn/GSM7990104/suppl/GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
           "size_bytes": 587106306,
+          "sha256": "3088d01dce3883d33a07b4693df8ae424a86614a4c735448c1fe0b9ebbe09727",
           "raw_data_snapshot_id": "data/raw/openst_human_lymph_node/GSM7990104_metastatic_lymph_node_S6.h5ad.gz",
-          "notes": "Canonical training reference section (S6)."
+          "verified": true,
+          "notes": "Canonical training reference section (S6). Gate G4 verified."
         },
         {
           "filename": "GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
-          "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE251nnn/GSE251926/suppl/GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
+          "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM7990nnn/GSM7990110/suppl/GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
           "size_bytes": 525692575,
+          "sha256": "b99ec94f5dc0698f269d31b79ab3fd031abe343911310fce20bfab007b34dfc4",
           "raw_data_snapshot_id": "data/raw/openst_human_lymph_node/GSM7990110_metastatic_lymph_node_S19.h5ad.gz",
-          "notes": "Canonical held-out test section (S19)."
+          "verified": true,
+          "notes": "Canonical held-out test section (S19). Gate G4 verified."
         }
       ]
     },
