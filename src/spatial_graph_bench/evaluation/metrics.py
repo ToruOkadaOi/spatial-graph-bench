@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, f1_score
 
 from spatial_graph_bench.evaluation.schema import EvaluationSummary
+
+# Suppress benign sklearn warning when predicted class isn't in ground truth subset
+warnings.filterwarnings(
+    "ignore",
+    message=".*y_pred contains classes not in y_true.*",
+    category=UserWarning,
+)
 
 
 def compute_partition_metrics(
