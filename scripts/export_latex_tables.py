@@ -15,11 +15,16 @@ def generate_latex_table() -> None:
     stereoseq_ph = Path(
         "artifacts/results/stereoseq_axolotl_telencephalon/developmental_three_stage/post_hoc_summary.json"
     )
+    openst_ph = Path(
+        "artifacts/results/openst_human_lymph_node/section_held_out_canonical/post_hoc_summary.json"
+    )
 
     with open(merfish_ph) as f:
         m_data = json.load(f)
     with open(stereoseq_ph) as f:
         s_data = json.load(f)
+    with open(openst_ph) as f:
+        o_data = json.load(f)
 
     topo_order = [
         "spatial_knn_k6",
@@ -46,7 +51,7 @@ def generate_latex_table() -> None:
         r"\begin{table*}[t]",
         r"\centering",
         r"\small",
-        r"\caption{\textbf{Cross-Modality Benchmark Synthesis: Statistical Equivalence and Matched Lift.} Evaluation of 4 GNN architectures across 7 topologies ($N=10$ random seeds) against frozen non-spatial MLP baselines. Two One-Sided Tests (TOST) evaluate equivalence within pre-registered parity bands ($\epsilon_{\text{MERFISH}} = \pm 0.0069$, $\epsilon_{\text{Stereo-seq}} = \pm 0.0215$). Directional significance is reported with Holm-Bonferroni FWER control ($\alpha = 0.05$).}",
+        r"\caption{\textbf{Tri-Modality Benchmark Synthesis: Statistical Equivalence and Matched Lift.} Evaluation of 4 GNN architectures across 7 topologies ($N=10$ random seeds) against frozen non-spatial MLP baselines across three spatial transcriptomics technologies. Two One-Sided Tests (TOST) evaluate equivalence within pre-registered parity bands ($\epsilon_{\text{MERFISH}} = \pm 0.0069$, $\epsilon_{\text{Stereo-seq}} = \pm 0.0215$, $\epsilon_{\text{Open-ST}} = \pm 0.0054$). Directional significance is reported with Holm-Bonferroni FWER control ($\alpha = 0.05$).}",
         r"\label{tab:benchmark_synthesis}",
         r"\begin{tabular}{llcccccc}",
         r"\toprule",
@@ -57,6 +62,7 @@ def generate_latex_table() -> None:
     for ds_name, data in [
         ("Stereo-seq (Axolotl Telencephalon)", s_data),
         ("MERFISH (Mouse Spinal Cord)", m_data),
+        ("Open-ST (Human Metastatic Lymph Node)", o_data),
     ]:
         lines.append(f"\\multicolumn{{8}}{{l}}{{\\textbf{{{ds_name}}}}} \\\\")
         lines.append(r"\midrule")

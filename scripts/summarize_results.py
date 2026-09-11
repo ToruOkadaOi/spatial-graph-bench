@@ -21,10 +21,18 @@ console = Console()
 
 
 def load_all_results(results_dir: Path):
+    # Determine dataset and split from results_dir
+    parts = results_dir.parts
+    ds_name = parts[-2] if len(parts) >= 2 else "merfish_mouse_spinal_cord"
+    split_id = parts[-1] if len(parts) >= 1 else "mouse_held_out_canonical"
+    snapshot_dir = Path(f"audits/baselines_snapshot/{ds_name}/{split_id}")
+
     # 1. Load MLP baselines
     mlp_baselines = {}
     for seed in range(42, 52):
         mlp_f = results_dir / f"mlp_none_seed{seed}" / "metrics_summary.json"
+        if not mlp_f.exists():
+            mlp_f = snapshot_dir / f"mlp_none_seed{seed}" / "metrics_summary.json"
         if not mlp_f.exists():
             mlp_f = (
                 Path("artifacts/snapshots/merfish_mouse_spinal_cord/mouse_held_out_canonical")
@@ -35,6 +43,13 @@ def load_all_results(results_dir: Path):
             with open(mlp_f) as f:
                 m = json.load(f)
             mlp_baselines[seed] = m["test"]["macro_f1"]
+
+    # Load parity band epsilon if available
+    epsilon = 0.0069
+    parity_file = snapshot_dir / "parity_band.json"
+    if parity_file.is_file():
+        pdata = json.loads(parity_file.read_text(encoding="utf-8"))
+        epsilon = float(pdata.get("parity_band_halfwidth", 0.0069))
 
     data: dict[tuple[str, str], dict[str, list[float]]] = defaultdict(
         lambda: {"gnn": [], "mlp": [], "lift": [], "time": [], "epoch": []}
@@ -73,11 +88,12 @@ def load_all_results(results_dir: Path):
                         data[(mod, gr)]["time"].append(man.get("training_time_seconds", 0))
                         data[(mod, gr)]["epoch"].append(man.get("best_epoch", 0))
 
-    return data, models, graphs
+    return data, models, graphs, epsilon, ds_name
 
 
-def print_summary_table(data, models, graphs, epsilon=0.0069):
-    table = Table(title="GNN Benchmark Sweep: 280 Runs across 10 Seeds (merfish_mouse_spinal_cord)")
+def print_summary_table(data, models, graphs, epsilon=0.0069, title=None):
+    title = title or f"GNN Benchmark Sweep: 280 Runs across 10 Seeds (Parity Margin ±{epsilon:.4f})"
+    table = Table(title=title)
     table.add_column("Model", style="cyan", justify="left")
     table.add_column("Graph Construction", style="magenta", justify="left")
     table.add_column("N", justify="center")
@@ -232,8 +248,14 @@ def main():
     elif args.per_class:
         print_per_class(args.results_dir)
     else:
-        data, models, graphs = load_all_results(args.results_dir)
-        print_summary_table(data, models, graphs)
+        data, models, graphs, epsilon, ds_name = load_all_results(args.results_dir)
+        print_summary_table(
+            data,
+            models,
+            graphs,
+            epsilon=epsilon,
+            title=f"GNN Benchmark Sweep: 280 Runs across 10 Seeds ({ds_name}) (Parity Margin ±{epsilon:.4f})",
+        )
 
 
 if __name__ == "__main__":

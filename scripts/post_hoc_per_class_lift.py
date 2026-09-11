@@ -48,21 +48,46 @@ def analyze_per_class_lift(
     # 1. Compute MLP baseline per-class F1 across seeds
     mlp_f1_matrix = []
     for seed in seeds:
-        mlp_path = res_dir / f"mlp_none_seed{seed}" / "test_preds.npy"
-        if not mlp_path.is_file():
-            mlp_path = snapshot_dir / f"mlp_none_seed{seed}" / "test_preds.npy"
-        preds = np.load(mlp_path)
-        f1s = f1_score(y_true, preds, labels=eval_ids, average=None, zero_division=0.0)
-        mlp_f1_matrix.append(f1s)
+        mlp_run = res_dir / f"mlp_none_seed{seed}"
+        if not mlp_run.is_dir():
+            mlp_run = snapshot_dir / f"mlp_none_seed{seed}"
+
+        metrics_file = mlp_run / "metrics_summary.json"
+        preds_file = mlp_run / "test_preds.npy"
+        if metrics_file.is_file():
+            with open(metrics_file) as f:
+                m_data = json.load(f)
+            class_f1s = [m_data["test"]["per_class_f1"].get(lab, 0.0) for lab in eval_labels]
+            mlp_f1_matrix.append(class_f1s)
+        elif preds_file.is_file():
+            preds = np.load(preds_file)
+            f1s = f1_score(y_true, preds, labels=eval_ids, average=None, zero_division=0.0)
+            mlp_f1_matrix.append(f1s)
+        else:
+            raise FileNotFoundError(
+                f"Neither metrics_summary.json nor test_preds.npy found in {mlp_run}"
+            )
     mlp_f1_matrix = np.array(mlp_f1_matrix)  # shape: (n_seeds, n_classes)
 
     # 2. Compute GNN per-class F1 across seeds
     gnn_f1_matrix = []
     for seed in seeds:
-        run_path = res_dir / f"{model}_{graph}_seed{seed}" / "test_preds.npy"
-        preds = np.load(run_path)
-        f1s = f1_score(y_true, preds, labels=eval_ids, average=None, zero_division=0.0)
-        gnn_f1_matrix.append(f1s)
+        run_path = res_dir / f"{model}_{graph}_seed{seed}"
+        metrics_file = run_path / "metrics_summary.json"
+        preds_file = run_path / "test_preds.npy"
+        if metrics_file.is_file():
+            with open(metrics_file) as f:
+                m_data = json.load(f)
+            class_f1s = [m_data["test"]["per_class_f1"].get(lab, 0.0) for lab in eval_labels]
+            gnn_f1_matrix.append(class_f1s)
+        elif preds_file.is_file():
+            preds = np.load(preds_file)
+            f1s = f1_score(y_true, preds, labels=eval_ids, average=None, zero_division=0.0)
+            gnn_f1_matrix.append(f1s)
+        else:
+            raise FileNotFoundError(
+                f"Neither metrics_summary.json nor test_preds.npy found in {run_path}"
+            )
     gnn_f1_matrix = np.array(gnn_f1_matrix)
 
     lift_matrix = gnn_f1_matrix - mlp_f1_matrix

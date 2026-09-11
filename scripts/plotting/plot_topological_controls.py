@@ -28,11 +28,15 @@ OUT_DIR = Path("results/figures")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def plot_topological_controls() -> None:
-    stereoseq_csv = Path(
-        "results/reports/stereoseq_axolotl_telencephalon_developmental_three_stage_all_runs_summary.csv"
-    )
-    df = pd.read_csv(stereoseq_csv)
+def plot_topological_controls(
+    dataset_name: str = "stereoseq_axolotl_telencephalon",
+    split_id: str = "developmental_three_stage",
+    out_suffix: str = "",
+) -> None:
+    csv_file = Path(f"results/reports/{dataset_name}_{split_id}_all_runs_summary.csv")
+    if not csv_file.is_file():
+        raise FileNotFoundError(f"Summary CSV not found: {csv_file}")
+    df = pd.read_csv(csv_file)
     df_sweep = df[df["run_type"] == "sweep"].copy()
 
     # Define control mappings
@@ -111,13 +115,29 @@ def plot_topological_controls() -> None:
 
     plt.tight_layout()
 
-    out_pdf = OUT_DIR / "fig2_topological_controls.pdf"
-    out_png = OUT_DIR / "fig2_topological_controls.png"
+    out_pdf = OUT_DIR / f"fig2_topological_controls{out_suffix}.pdf"
+    out_png = OUT_DIR / f"fig2_topological_controls{out_suffix}.png"
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Generated Figure 2:\n  PDF: {out_pdf}\n  PNG: {out_png}")
 
 
+def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Plot topological negative controls.")
+    parser.add_argument("--dataset", default="stereoseq_axolotl_telencephalon")
+    parser.add_argument("--split", default="developmental_three_stage")
+    parser.add_argument("--suffix", default="")
+    args = parser.parse_args()
+
+    plot_topological_controls(
+        dataset_name=args.dataset,
+        split_id=args.split,
+        out_suffix=args.suffix,
+    )
+
+
 if __name__ == "__main__":
-    plot_topological_controls()
+    main()

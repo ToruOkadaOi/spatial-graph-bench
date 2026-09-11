@@ -37,9 +37,13 @@ OUT_DIR = Path("results/figures")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def plot_boundary_analysis() -> None:
-    dataset_name = "stereoseq_axolotl_telencephalon"
-    split_id = "developmental_three_stage"
+def plot_boundary_analysis(
+    dataset_name: str = "stereoseq_axolotl_telencephalon",
+    split_id: str = "developmental_three_stage",
+    graph: str = "spatial_knn_k12",
+    display_title: str = "Stereo-seq Stage 57",
+    out_suffix: str = "",
+) -> None:
     prep_dir = Path(f"artifacts/preprocessed/{dataset_name}/{split_id}")
     post_hoc_file = Path(f"artifacts/results/{dataset_name}/{split_id}/post_hoc_summary.json")
 
@@ -52,12 +56,12 @@ def plot_boundary_analysis() -> None:
     # Compute boundary mask
     is_boundary = compute_boundary_mask(coords, sections, percentile=15.0)
 
-    # Load post-hoc summary for spatial_knn_k12
+    # Load post-hoc summary
     with open(post_hoc_file) as f:
         post_hoc = json.load(f)
 
     df_ph = pd.DataFrame(post_hoc)
-    df_k12 = df_ph[df_ph["graph"] == "spatial_knn_k12"].copy()
+    df_k = df_ph[df_ph["graph"] == graph].copy()
 
     fig, axes = plt.subplots(1, 2, figsize=(15, 6.5))
 
@@ -93,7 +97,7 @@ def plot_boundary_analysis() -> None:
         ax_map.plot(sec_pts[simplex, 0], sec_pts[simplex, 1], "k--", linewidth=1.2, alpha=0.7)
 
     ax_map.set_title(
-        "A. Tissue Convex Hull Geometric Margin (Stereo-seq Stage 57)",
+        f"A. Tissue Convex Hull Geometric Margin ({display_title})",
         fontsize=12,
         fontweight="bold",
         pad=12,
@@ -110,7 +114,7 @@ def plot_boundary_analysis() -> None:
 
     records = []
     for m, m_disp in zip(models, model_display, strict=True):
-        row = df_k12[df_k12["model"] == m].iloc[0]
+        row = df_k[df_k["model"] == m].iloc[0]
         records.append({"Model": m_disp, "Region": "Deep Interior", "Lift": row["int_lift_mean"]})
         records.append({"Model": m_disp, "Region": "Boundary Margin", "Lift": row["bnd_lift_mean"]})
 
@@ -129,7 +133,7 @@ def plot_boundary_analysis() -> None:
 
     ax_bar.axhline(0, color="#333333", linestyle="-", linewidth=1.2, zorder=2)
     ax_bar.set_title(
-        "B. Edge Degradation: Interior vs. Boundary Lift (spatial_knn_k12)",
+        f"B. Edge Degradation: Interior vs. Boundary Lift ({graph})",
         fontsize=12,
         fontweight="bold",
         pad=12,
@@ -152,7 +156,7 @@ def plot_boundary_analysis() -> None:
     ax_bar.annotate(
         f"Margin Penalty:\n{penalty:.2f}% F1",
         xy=(3, sage_bnd),
-        xytext=(3.1, -0.05),
+        xytext=(3.1, min(sage_bnd - 0.02, -0.05)),
         arrowprops={"facecolor": "black", "shrink": 0.05, "width": 1, "headwidth": 5},
         fontsize=9.5,
         fontweight="bold",
@@ -160,13 +164,33 @@ def plot_boundary_analysis() -> None:
 
     plt.tight_layout()
 
-    out_pdf = OUT_DIR / "fig3_boundary_stratification.pdf"
-    out_png = OUT_DIR / "fig3_boundary_stratification.png"
+    out_pdf = OUT_DIR / f"fig3_boundary_stratification{out_suffix}.pdf"
+    out_png = OUT_DIR / f"fig3_boundary_stratification{out_suffix}.png"
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Generated Figure 3:\n  PDF: {out_pdf}\n  PNG: {out_png}")
 
 
+def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Plot boundary stratification analysis.")
+    parser.add_argument("--dataset", default="stereoseq_axolotl_telencephalon")
+    parser.add_argument("--split", default="developmental_three_stage")
+    parser.add_argument("--graph", default="spatial_knn_k12")
+    parser.add_argument("--title", default="Stereo-seq Stage 57")
+    parser.add_argument("--suffix", default="")
+    args = parser.parse_args()
+
+    plot_boundary_analysis(
+        dataset_name=args.dataset,
+        split_id=args.split,
+        graph=args.graph,
+        display_title=args.title,
+        out_suffix=args.suffix,
+    )
+
+
 if __name__ == "__main__":
-    plot_boundary_analysis()
+    main()

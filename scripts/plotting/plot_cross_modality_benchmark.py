@@ -36,25 +36,33 @@ def plot_cross_modality_matrix() -> None:
     stereoseq_csv = Path(
         "results/reports/stereoseq_axolotl_telencephalon_developmental_three_stage_all_runs_summary.csv"
     )
+    openst_csv = Path(
+        "results/reports/openst_human_lymph_node_section_held_out_canonical_all_runs_summary.csv"
+    )
 
     df_m = pd.read_csv(merfish_csv)
     df_s = pd.read_csv(stereoseq_csv)
+    df_o = pd.read_csv(openst_csv)
 
     df_m["Dataset"] = "MERFISH (Mouse Spinal Cord)"
     df_s["Dataset"] = "Stereo-seq (Axolotl Telencephalon)"
+    df_o["Dataset"] = "Open-ST (Human Lymph Node)"
 
     # Filter to GNN sweep runs
     df_gnn_m = df_m[df_m["run_type"] == "sweep"].copy()
     df_gnn_s = df_s[df_s["run_type"] == "sweep"].copy()
+    df_gnn_o = df_o[df_o["run_type"] == "sweep"].copy()
 
     # Baselines
     mlp_m_mean = df_m[df_m["model"] == "mlp"]["test_macro_f1"].mean()
     mlp_m_std = df_m[df_m["model"] == "mlp"]["test_macro_f1"].std()
     mlp_s_mean = df_s[df_s["model"] == "mlp"]["test_macro_f1"].mean()
     mlp_s_std = df_s[df_s["model"] == "mlp"]["test_macro_f1"].std()
+    mlp_o_mean = df_o[df_o["model"] == "mlp"]["test_macro_f1"].mean()
+    mlp_o_std = df_o[df_o["model"] == "mlp"]["test_macro_f1"].std()
 
-    # Create 2-panel figure
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6.5), sharey=False)
+    # Create 3-panel figure
+    fig, axes = plt.subplots(1, 3, figsize=(24, 6.5), sharey=False)
 
     topologies = [
         "spatial_knn_k6",
@@ -77,22 +85,31 @@ def plot_cross_modality_matrix() -> None:
     topo_map = dict(zip(topologies, topo_labels, strict=True))
     palette = sns.color_palette("Set2", n_colors=4)
 
-    for ax, df_curr, title, mlp_mean, mlp_std in [
+    panels = [
         (
             axes[0],
             df_gnn_m,
-            "A. MERFISH: Adult Mouse Spinal Cord (Heterophilic)",
+            "A. MERFISH: Adult Spinal Cord (Heterophilic Parity)",
             mlp_m_mean,
             mlp_m_std,
         ),
         (
             axes[1],
             df_gnn_s,
-            "B. Stereo-seq: Developing Axolotl Brain (Homophilic)",
+            "B. Stereo-seq: Axolotl Telencephalon (+6.4% Lift)",
             mlp_s_mean,
             mlp_s_std,
         ),
-    ]:
+        (
+            axes[2],
+            df_gnn_o,
+            "C. Open-ST: Human Lymph Node (Tumor Over-smoothing)",
+            mlp_o_mean,
+            mlp_o_std,
+        ),
+    ]
+
+    for ax, df_curr, title, mlp_mean, mlp_std in panels:
         df_curr["Topology_Clean"] = df_curr["topology"].map(topo_map)
         df_curr["Model_Clean"] = df_curr["model"].str.upper()
         df_curr.loc[df_curr["Model_Clean"] == "GRAPHSAGE", "Model_Clean"] = "GraphSAGE"
@@ -123,9 +140,10 @@ def plot_cross_modality_matrix() -> None:
             zorder=3,
         )
 
-        ax.set_title(title, fontsize=13, fontweight="bold", pad=12)
+        ax.set_title(title, fontsize=12.5, fontweight="bold", pad=12)
         ax.set_xlabel("Graph Construction / Topology", fontweight="bold", labelpad=8)
         ax.set_ylabel("Test Macro-F1 (10 Seeds)", fontweight="bold", labelpad=8)
+        ax.set_xticks(range(len(topo_labels)))
         ax.set_xticklabels(topo_labels, rotation=35, ha="right", fontsize=9.5)
         ax.grid(axis="y", linestyle=":", alpha=0.6, zorder=0)
 
@@ -135,6 +153,7 @@ def plot_cross_modality_matrix() -> None:
 
     axes[0].legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
     axes[1].legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
+    axes[2].legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
 
     plt.tight_layout()
 
