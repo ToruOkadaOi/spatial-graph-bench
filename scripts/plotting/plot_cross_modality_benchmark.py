@@ -39,19 +39,25 @@ def plot_cross_modality_matrix() -> None:
     openst_csv = Path(
         "results/reports/openst_human_lymph_node_section_held_out_canonical_all_runs_summary.csv"
     )
+    xenium_csv = Path(
+        "results/reports/xenium_mouse_kidney_replicate_held_out_canonical_all_runs_summary.csv"
+    )
 
     df_m = pd.read_csv(merfish_csv)
     df_s = pd.read_csv(stereoseq_csv)
     df_o = pd.read_csv(openst_csv)
+    df_x = pd.read_csv(xenium_csv)
 
     df_m["Dataset"] = "MERFISH (Mouse Spinal Cord)"
     df_s["Dataset"] = "Stereo-seq (Axolotl Telencephalon)"
     df_o["Dataset"] = "Open-ST (Human Lymph Node)"
+    df_x["Dataset"] = "10x Xenium (Mouse Kidney)"
 
     # Filter to GNN sweep runs
     df_gnn_m = df_m[df_m["run_type"] == "sweep"].copy()
     df_gnn_s = df_s[df_s["run_type"] == "sweep"].copy()
     df_gnn_o = df_o[df_o["run_type"] == "sweep"].copy()
+    df_gnn_x = df_x[df_x["run_type"] == "sweep"].copy()
 
     # Baselines
     mlp_m_mean = df_m[df_m["model"] == "mlp"]["test_macro_f1"].mean()
@@ -60,9 +66,11 @@ def plot_cross_modality_matrix() -> None:
     mlp_s_std = df_s[df_s["model"] == "mlp"]["test_macro_f1"].std()
     mlp_o_mean = df_o[df_o["model"] == "mlp"]["test_macro_f1"].mean()
     mlp_o_std = df_o[df_o["model"] == "mlp"]["test_macro_f1"].std()
+    mlp_x_mean = df_x[df_x["model"] == "mlp"]["test_macro_f1"].mean()
+    mlp_x_std = df_x[df_x["model"] == "mlp"]["test_macro_f1"].std()
 
-    # Create 3-panel figure
-    fig, axes = plt.subplots(1, 3, figsize=(24, 6.5), sharey=False)
+    # Create 2x2 grid figure
+    fig, axes = plt.subplots(2, 2, figsize=(18, 12), sharey=False)
 
     topologies = [
         "spatial_knn_k6",
@@ -87,25 +95,32 @@ def plot_cross_modality_matrix() -> None:
 
     panels = [
         (
-            axes[0],
+            axes[0, 0],
             df_gnn_m,
             "A. MERFISH: Adult Spinal Cord (Heterophilic Parity)",
             mlp_m_mean,
             mlp_m_std,
         ),
         (
-            axes[1],
+            axes[0, 1],
             df_gnn_s,
             "B. Stereo-seq: Axolotl Telencephalon (+6.4% Lift)",
             mlp_s_mean,
             mlp_s_std,
         ),
         (
-            axes[2],
+            axes[1, 0],
             df_gnn_o,
             "C. Open-ST: Human Lymph Node (Tumor Over-smoothing)",
             mlp_o_mean,
             mlp_o_std,
+        ),
+        (
+            axes[1, 1],
+            df_gnn_x,
+            "D. 10x Xenium: Mouse Kidney (Inter-Tubular Over-smoothing)",
+            mlp_x_mean,
+            mlp_x_std,
         ),
     ]
 
@@ -150,10 +165,7 @@ def plot_cross_modality_matrix() -> None:
         # Add vertical separator between canonical / bipartite / controls
         ax.axvline(1.5, color="#bbbbbb", linestyle=":", linewidth=1)
         ax.axvline(2.5, color="#bbbbbb", linestyle=":", linewidth=1)
-
-    axes[0].legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
-    axes[1].legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
-    axes[2].legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
+        ax.legend(loc="upper right", frameon=True, framealpha=0.9, fontsize=9)
 
     plt.tight_layout()
 

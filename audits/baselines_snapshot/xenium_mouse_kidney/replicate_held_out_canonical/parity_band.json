@@ -1,0 +1,14 @@
+{
+  "dataset_name": "xenium_mouse_kidney",
+  "split_id": "replicate_held_out_canonical",
+  "num_mlp_seeds": 10,
+  "mlp_mean_test_macro_f1": 0.7635195634665123,
+  "mlp_sigma_test_macro_f1": 0.01203342445789584,
+  "parity_band_halfwidth": 0.02406684891579168,
+  "parity_band_interval": [
+    0.7394527145507206,
+    0.787586412382304
+  ],
+  "tost_equivalence_margin_epsilon": 0.02406684891579168,
+  "rf_test_macro_f1": 0.7789167673840938
+}
