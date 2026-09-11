@@ -246,6 +246,74 @@ def process_openst_features(split_id: str = "section_held_out_canonical") -> Non
     logger.info("Feature manifest hash: %s", bundle_a.manifest.compute_manifest_hash())
 
 
+def process_xenium_features(split_id: str = "replicate_held_out_canonical") -> None:
+    paths = ArtifactPaths.default()
+    split_file = paths.dataset_split_file("xenium_mouse_kidney", split_id)
+    raw_path = paths.raw_data_dir / "xenium_mouse_kidney" / "Xenium.h5ad"
+
+    if not split_file.is_file():
+        raise FileNotFoundError(f"Split file not found: {split_file}")
+    if not raw_path.is_file():
+        raise FileNotFoundError(f"Xenium raw file not found: {raw_path}")
+
+    split = SplitDefinition.load_json(split_file)
+    logger.info("Loading Xenium split: %s", split_id)
+    all_split_cells = set(split.train_cell_ids + split.val_cell_ids + split.test_cell_ids)
+
+    logger.info("Opening Xenium dataset in backed mode: %s", raw_path)
+    a = ad.read_h5ad(raw_path, backed="r")
+
+    isin_mask = a.obs.index.astype(str).isin(all_split_cells)
+    keep_indices = np.where(isin_mask)[0]
+    logger.info("Retrieved %d matched cells from Xenium dataset", len(keep_indices))
+
+    obs_sub = a.obs.iloc[keep_indices].copy()
+    obs_sub["section_str"] = obs_sub["ident"].astype(str)
+    obs_sub.index = obs_sub.index.astype(str)
+
+    spatial_sub = a.obsm["spatial"][keep_indices].astype(np.float32)
+    counts_sub = a.raw.X[keep_indices]
+    if not sparse.issparse(counts_sub):
+        counts_sub = sparse.csr_matrix(counts_sub)
+
+    config_a = PreprocessingConfig(
+        version=PreprocessingPipelineVersion.STRICT_A,
+        n_pca_components=50,
+        n_hvg=min(299, counts_sub.shape[1]),
+    )
+
+    logger.info("Executing mandatory coordinate-shuffle test for Version A...")
+    audit_passed = verify_spatial_ignorance(
+        X_counts=counts_sub,
+        obs=obs_sub,
+        spatial_coords=spatial_sub,
+        split=split,
+        config=config_a,
+        label_col="celltype_plot",
+        section_col="section_str",
+    )
+    if not audit_passed:
+        raise RuntimeError(
+            "Coordinate-shuffle audit FAILED! Spatial information leaked into features."
+        )
+
+    logger.info("Coordinate-shuffle test passed! Building Version A feature bundle...")
+    bundle_a = run_feature_pipeline(
+        X_counts=counts_sub,
+        obs=obs_sub,
+        spatial_coords=spatial_sub,
+        split=split,
+        config=config_a,
+        label_col="celltype_plot",
+        section_col="section_str",
+    )
+
+    out_dir_a = paths.dataset_preprocessed_dir("xenium_mouse_kidney", split_id)
+    bundle_a.save(out_dir_a)
+    logger.info("Saved Version A preprocessed bundle: %s", out_dir_a)
+    logger.info("Feature manifest hash: %s", bundle_a.manifest.compute_manifest_hash())
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
@@ -258,5 +326,7 @@ if __name__ == "__main__":
         process_stereoseq_features(split_id=args.split)
     elif args.dataset == "openst_human_lymph_node":
         process_openst_features(split_id=args.split)
+    elif args.dataset == "xenium_mouse_kidney":
+        process_xenium_features(split_id=args.split)
     else:
         raise ValueError(f"Unknown dataset: {args.dataset}")

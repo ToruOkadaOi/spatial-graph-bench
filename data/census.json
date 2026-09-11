@@ -84,6 +84,16 @@
       "hierarchy_rationale": "Gate G3 confirmed: GSM metadata lacks explicit animal IDs. 12 sections spanning 6 stages (Sham, H4, H12, D2, D14, W6) with two technical replicates per time point (L and R kidneys). Strict replicate-held-out split, never 'donor-held-out'.",
       "files": [
         {
+          "filename": "Xenium.h5ad",
+          "url": "https://ndownloader.figshare.com/files/53543495",
+          "size_bytes": 2029642863,
+          "md5": "e6f5728ab7e47b499149f63b54e892c7",
+          "sha256": "200396c950f2b165f9d51dc9dc59c7c010caa5c80c00eaef1d8e4c1c0d1b59f7",
+          "raw_data_snapshot_id": "data/raw/xenium_mouse_kidney/Xenium.h5ad",
+          "verified": true,
+          "notes": "Consolidated annotated AnnData containing 12 IRI injury/repair sections (Sham, 4h, 12h, 2d, 14d, 6w) across L and R technical replicates. Gate G3 verified."
+        },
+        {
           "filename": "GSM8325615_xenium_shamL_male_output.tar.gz",
           "url": "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM8325nnn/GSM8325615/suppl/GSM8325615_xenium_shamL_male_output.tar.gz",
           "raw_data_snapshot_id": "data/raw/xenium_mouse_kidney/GSM8325615_xenium_shamL_male_output.tar.gz",

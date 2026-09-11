@@ -241,6 +241,42 @@ def generate_openst_splits() -> None:
     logger.info("Saved Open-ST canonical split: %s", out_canonical)
 
 
+def generate_xenium_splits() -> None:
+    paths = ArtifactPaths.default()
+    h5_path = paths.raw_data_dir / "xenium_mouse_kidney" / "Xenium.h5ad"
+    if not h5_path.is_file():
+        raise FileNotFoundError(f"Xenium raw file missing: {h5_path}")
+
+    logger.info("Loading Xenium dataset: %s", h5_path)
+    adata = ad.read_h5ad(h5_path, backed="r")
+    obs = adata.obs[adata.obs["ident"].isin(["ShamL", "ShamR"])][["ident", "celltype_plot"]].copy()
+    obs["cell_id"] = obs.index.astype(str)
+
+    canonical_cfg = SplitConfig(
+        dataset_name="xenium_mouse_kidney",
+        split_id="replicate_held_out_canonical",
+        hierarchy=SplitHierarchy.REPLICATE_HELD_OUT,
+        seed=42,
+        train_groups=["ShamL"],
+        val_groups=[],
+        val_ratio_within_train=0.2,
+        test_groups=["ShamR"],
+        group_column="ident",
+    )
+
+    canonical_split = create_split_definition(
+        obs,
+        canonical_cfg,
+        cell_id_col="cell_id",
+        label_col="celltype_plot",
+    )
+    out_canonical = paths.dataset_split_file(
+        "xenium_mouse_kidney", "replicate_held_out_canonical"
+    )
+    canonical_split.save_json(out_canonical)
+    logger.info("Saved Xenium canonical split: %s", out_canonical)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=str, default="merfish_mouse_spinal_cord")
@@ -252,5 +288,7 @@ if __name__ == "__main__":
         generate_stereoseq_splits()
     elif args.dataset == "openst_human_lymph_node":
         generate_openst_splits()
+    elif args.dataset == "xenium_mouse_kidney":
+        generate_xenium_splits()
     else:
         raise ValueError(f"Unknown dataset: {args.dataset}")

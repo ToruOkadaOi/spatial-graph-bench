@@ -19,10 +19,17 @@ def download_with_resume(url: str, dest_path: Path, max_retries: int = 50) -> No
     total_size = 0
     for _ in range(5):
         try:
-            head = requests.head(url, verify=False, timeout=15)
+            head = requests.head(url, verify=False, timeout=15, allow_redirects=True)
             if "content-length" in head.headers:
                 total_size = int(head.headers["content-length"])
                 break
+        except Exception:
+            pass
+        try:
+            with requests.get(url, verify=False, stream=True, timeout=15) as r:
+                if "content-length" in r.headers:
+                    total_size = int(r.headers["content-length"])
+                    break
         except Exception:
             time.sleep(1)
 
