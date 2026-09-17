@@ -116,6 +116,53 @@ def generate_latex_table() -> None:
     out_file.write_text("\n".join(lines), encoding="utf-8")
     print(f"Generated LaTeX table:\n  {out_file}")
 
+    # Generate Markdown version
+    md_lines = [
+        "# Quad-Modality Benchmark Synthesis Table",
+        "",
+        "Evaluation of 4 GNN architectures across 7 topologies ($N=10$ random seeds) against frozen non-spatial MLP baselines across four spatial transcriptomics technologies.",
+        "",
+        "| Modality / Dataset | Model | Topology | GNN Macro-F1 | Matched Lift $\\Delta$ | 90% TOST CI | $p_{\\text{TOST}}$ | FWER Decision |",
+        "|:---|:---|:---|:---:|:---:|:---:|:---:|:---|",
+    ]
+
+    for ds_name, data in [
+        ("Stereo-seq (Axolotl Telencephalon)", s_data),
+        ("MERFISH (Mouse Spinal Cord)", m_data),
+        ("Open-ST (Human Metastatic Lymph Node)", o_data),
+        ("10x Xenium (Mouse Kidney)", x_data),
+    ]:
+        md_lines.append(f"| **{ds_name}** | | | | | | | |")
+        df = pd.DataFrame(data)
+        for m in model_order:
+            for topo in topo_order:
+                sub = df[(df["model"] == m) & (df["graph"] == topo)]
+                if sub.empty:
+                    continue
+                row = sub.iloc[0]
+                gnn_f1_str = f"{row['gnn_overall']:.4f}"
+                lift_str = f"{row['mean_lift']:+.4f}"
+                ci_str = f"[{row['ci_90_low']:+.4f}, {row['ci_90_high']:+.4f}]"
+                p_tost_str = f"{row['p_tost']:.4f}" if row["p_tost"] >= 0.0001 else "<1e-4"
+                decision = row["decision"]
+
+                if "POSITIVE" in decision:
+                    dec_str = "**Positive Lift**"
+                elif "PARITY" in decision or "EQUIVALENT" in decision:
+                    dec_str = "Parity"
+                else:
+                    dec_str = "Negative Lift"
+
+                m_label = model_labels[m]
+                t_label = topo_labels[topo]
+                md_lines.append(
+                    f"| | {m_label} | {t_label} | {gnn_f1_str} | {lift_str} | {ci_str} | {p_tost_str} | {dec_str} |"
+                )
+
+    out_md = Path("results/reports/table_benchmark_synthesis.md")
+    out_md.write_text("\n".join(md_lines) + "\n", encoding="utf-8")
+    print(f"Generated Markdown table:\n  {out_md}")
+
 
 if __name__ == "__main__":
     generate_latex_table()
