@@ -1,10 +1,10 @@
 # spatial-graph-bench
 
-> **Q**: Does message passing over (task: cell–cell spatial graphs improve cell-type classification) over strong non-spatial baselines trained on identical features?
+> **Q**: Does message passing over cell–cell spatial graphs improve (task: cell-type classification) over strong non-spatial baselines trained on identical features?
 
 ---
 
-## 1. Hypothesis & Rule
+## 1. Rule
 
 A graph architecture $M$ provides inductive benefit over cellular gene expression alone if and only if:
 
@@ -12,8 +12,8 @@ $$\text{Macro-F1}(M) > \text{Macro-F1}(\text{MLP}) + \epsilon, \quad \text{where
 
 evaluated under Two One-Sided Tests (TOST) with Holm-Bonferroni FWER control ($\alpha = 0.05$).
 
-- If $|\Delta| \le \epsilon$, the model falls within the pre-registered empirical parity band (equal to twice the MLP's own standard deviation across 10 seed runs).
-- If $\Delta < -\epsilon$, spatial message passing actively degrades classification accuracy.
+- If $|\Delta| \le \epsilon$, the model falls within the pre-registered empirical parity band (equal to twice the MLP's own standard deviation $\sigma$ across 10 seed runs).
+- If $\Delta < -\epsilon$, message passing degrades classification accuracy.
 
 ---
 
@@ -21,11 +21,11 @@ evaluated under Two One-Sided Tests (TOST) with Holm-Bonferroni FWER control ($\
 
 Across 4 spatial transcriptomics platforms (1,164 benchmark runs, 10 random seeds):
 
-1. Cell–cell spatial graphs provide a genuine inductive benefit in only 1 of 4 biological contexts (Stereo-seq developing axolotl brain, $+6.4\%$).
-2. In fine-grained cellular mixtures (MERFISH adult mouse spinal cord), spatial graphs fall within the pre-registered parity band relative to a non-spatial MLP baseline ($\pm 0.7\%$).
+1. Cell–cell spatial graphs provide a genuine inductive benefit in only 1 of 4 biological contexts (Stereo-seq developing axolotl brain, +6.4%).
+2. In fine-grained cellular mixtures (MERFISH adult mouse spinal cord), spatial graphs fall within the pre-registered parity band relative to MLP baseline (0.7%).
 3. Across sharp histological boundaries (Open-ST metastatic carcinoma), isotropic neighbor-averaging blurs tumor–stroma boundaries into a false gradient, causing negative lift.
-4. In structurally imbalanced tissues (10x Xenium mouse kidney), spatial message passing causes catastrophic interstitial over-smoothing, with negative lift ranging $-5.8\%$ to $-39.3\%$ across the two conditions.
-5. Physical spatial $k$-NN graphs fail to provide lift in MERFISH and Xenium, but non-physical expression-space bipartite reference graphs (`bipartite_ref_k20`) rescue both: restoring performance to $0.5640$ in MERFISH ($+0.0367$ lift) and $0.7560$ in Xenium (parity, recovering a $-37.9\%$ collapse).
+4. In structurally imbalanced tissues (10x Xenium mouse kidney), spatial message passing causes catastrophic interstitial over-smoothing, with negative lift ranging -5.8% to -39.3% across the two conditions.
+5. Physical spatial k-NN graphs fail to provide lift in MERFISH and Xenium, but non-physical expression-space bipartite reference graphs help in both cases. Perfomance restored to 0.5640 in MERFISH (+0.0367 lift) and 0.7560 in Xenium (parity, recovering from a -37.9% collapse).
 
 ---
 
@@ -49,7 +49,7 @@ All models evaluated across $N=10$ independent random seeds (42–51) on frozen 
 | **Open-ST**<br>*(Human Lymph Node)* | $0.3946 \pm 0.0027$ | $0.3216$ ($-0.0730$) | $0.3257$ ($-0.0689$) | $0.3303$ ($-0.0643$) | $\mathbf{0.3962}$ ($\mathbf{+0.0016}$) | **Isotropic GNNs blur tumor-stroma boundaries**; GraphSAGE matches MLP. |
 | **10x Xenium**<br>*(Mouse Kidney)* | $0.7635 \pm 0.0120$ | $0.3711$ ($-0.3925$) | $0.4338$ ($-0.3297$) | $0.3846$ ($-0.3789$) | $\mathbf{0.7514}$ ($\mathbf{-0.0121}$) | **Catastrophic $-33\%$ to $-39\%$ collapse under GCN/GAT/GIN**; GraphSAGE rescues to parity. |
 
-For complete statistical tables, CI, and raw runs details: [docs/results-synthesis.md](docs/results-synthesis.md) and [results/reports/table_benchmark_synthesis.md](results/reports/table_benchmark_synthesis.md).
+Complete statistical tables, CI, and run details: [docs/results-synthesis.md](docs/results-synthesis.md) and [results/reports/table_benchmark_synthesis.md](results/reports/table_benchmark_synthesis.md).
 
 ---
 
@@ -143,3 +143,9 @@ uv run ruff format --check src tests scripts
 - [LICENSE](LICENSE): MIT License.
 
 </details>
+
+---
+
+## 7. Next Steps
+
+Extend to relation-specific message passing
