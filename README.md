@@ -53,27 +53,39 @@ Complete statistical tables, CI, and run details: [docs/results-synthesis.md](do
 
 ---
 
-## 4. Open Questions
+## 4. Open Questions [W.I.P]
 
-When do cell–cell spatial graphs provide a genuine inductive benefit over tuned non-graph baselines for cell-type annotation in spatial transcriptomics?
+#### 1. Which graph designs helped?
 
-Results across different platforms?
+- A moderate K number of neighbors (12 instead of 6), in tissues where neighboring cells really do share the same type. In those cases, wider neighborhoods filter out noise more effectively.
+-  Connecting cells to a reference set of cells in gene-expression space.
 
-Which measurable spatial properties explain success or failure?
+#### 2. Why aren't simple physical-neighbor graphs good enough, and what would work better?
 
-Which graph constructions help?
+Spatial graphs have three problems:
 
-Why could some graphs be sub optimal? What could be better?
+- They connect cells that are physically close even if there is biological separation
+- They force every cell to have the same number of neighbors, even when real tissue density might be different; 
+- Cells near the tissue's outer edge only have neighbors on one side, which skews their results.
 
-Can non-spatial graph constructions (e.g., expression-space bipartite graphs) rescue cases where physical spatial graphs fail?
+***Yes there are/should be better approaches!*** [see end]
 
-Why do isotropic GNNs (GCN, GAT, GIN) fail under heterophily while GraphSAGE doesn't?
+#### 3. Why did connecting cells by gene expression (as opp. to physical location) work better?
 
-Does performance degrade differently at tissue boundaries versus tissue interiors?
+- No cross-boundary mixing. A cell only connects to reference cells of similar type, regardless of what's physically next to it in the tissue.
+- Pushing to an average version of its true type reduces the noise
+- Physical damage in the tissue  doesn't affect the underlying gene expression
 
-How do we know the observed failures reflect real tissue topology rather than generic smoothing artifacts?
+#### 4. Why do some GNN types collapse in mixed-neighbor tissue, while others don't?
 
-Does cell-type class imbalance compound the failure modes seen under volumetric imbalance?
+Averaging (GCN, GIN, and GAT's weighted sum) mixes self and neighbors into one shared signal before transformation, so self can get overwhelmed when neighbors are misleading.  This causes accuracy drops (in my case down 35-39% in two datasets).
+
+GraphSAGE's CONCAT gives "skip-connection" as mentioned in their paper
+#### 5. Misc: Do cells near tissue boundaries perform worse than cells in the interior?
+
+Across all the datasets tested (accuracy dropped by roughly 2–3 percentage points near the edges)
+
+- Leaving aside sample prep. related artifacts, cells near the outer edge of a tissue sample simply have fewer neighbors to draw on, since there's nothing beyond the boundary
 
 ---
 
@@ -85,6 +97,8 @@ All benchmarks enforce four controlled experimental variables:
 - **Identical fixed features with audited spatial ignorance**: Random Forest, MLP, and all GNNs evaluate on identical 50-dimensional Principal Components fitted strictly on training gene expression. Coordinate-shuffle audits verify zero spatial leakage into features ($\max |\Delta| = 0.0 \le 10^{-6}$).
 - **Controlled model comparison**: Standard inductive GNN architectures (GCN, GraphSAGE, GAT, GIN) evaluated against a tuned, regularized non-spatial MLP on identical train/val/test partitions across 10 random seeds (42–51).
 - **Topological negative controls**: Degree-preserving edge rewiring and coordinate shuffling benchmarked across every condition to verify models respond to authentic tissue topology rather than unspecific smoothing artifacts.
+
+*see - [scgraph-bench](https://github.com/ToruOkadaOi/scgraph-bench), my [ml_gist](https://gist.github.com/ToruOkadaOi/a20725a1d13a83d6884d551f53953b20#file-mlgist-md)*
 
 ---
 
@@ -146,6 +160,6 @@ uv run ruff format --check src tests scripts
 
 ---
 
-## 7. Next Steps
+## 7. Next Steps [W.I.P]
 
 Extend to relation-specific message passing
