@@ -11,7 +11,7 @@ import torch
 from pydantic import BaseModel, ConfigDict, Field
 from torch_geometric.data import Data
 
-from spatial_graph_bench.utils.hashing import hash_dict
+from spatial_graph_bench.utils.hashing import hash_array, hash_dict
 
 
 class GraphManifest(BaseModel):
@@ -99,6 +99,31 @@ class GraphBundle:
             raise ValueError("Mask sizes do not match num_nodes")
         if self.edge_weight is not None and self.edge_weight.size(0) != self.edge_index.size(1):
             raise ValueError("edge_weight length != num edges")
+        memberships = self.train_mask.int() + self.val_mask.int() + self.test_mask.int()
+        if not torch.all(memberships == 1):
+            raise ValueError("Graph masks must be disjoint and cover every node")
+        counts = (
+            self.manifest.num_train_nodes,
+            self.manifest.num_val_nodes,
+            self.manifest.num_test_nodes,
+        )
+        start = 0
+        for mask, count in zip(
+            (self.train_mask, self.val_mask, self.test_mask), counts, strict=True
+        ):
+            expected = torch.zeros(self.num_nodes, dtype=torch.bool, device=mask.device)
+            expected[start : start + count] = True
+            if not torch.equal(mask, expected):
+                raise ValueError("Graph masks disagree with the declared train/val/test node order")
+            start += count
+        if start != self.num_nodes:
+            raise ValueError("Graph manifest partition counts do not cover nodes")
+        if len(self.node_section_ids) != self.num_nodes:
+            raise ValueError("Section IDs must align with nodes")
+        if self.edge_index.numel() and (
+            self.edge_index.min() < 0 or self.edge_index.max() >= self.num_nodes
+        ):
+            raise ValueError("Edge endpoint outside node range")
 
     def to_pyg_data(
         self,
@@ -179,6 +204,13 @@ class GraphBundle:
         manifest = GraphManifest.model_validate_json(
             (d / "graph_manifest.json").read_text(encoding="utf-8")
         )
+        if hash_array(edge_index.numpy()) != manifest.edge_index_hash:
+            raise ValueError(f"Graph edge hash mismatch: {d}")
+        weight_hash = hash_array(edge_weight.numpy()) if edge_weight is not None else None
+        if weight_hash != manifest.edge_weight_hash:
+            raise ValueError(f"Graph weight hash mismatch: {d}")
+        if manifest.num_nodes != len(meta["cell_ids"]) or manifest.num_edges != edge_index.size(1):
+            raise ValueError(f"Graph manifest dimensions mismatch: {d}")
 
         return cls(
             edge_index=edge_index,

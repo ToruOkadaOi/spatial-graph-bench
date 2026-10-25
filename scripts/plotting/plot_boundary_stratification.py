@@ -45,7 +45,9 @@ def plot_boundary_analysis(
     out_suffix: str = "",
 ) -> None:
     prep_dir = Path(f"artifacts/preprocessed/{dataset_name}/{split_id}")
-    post_hoc_file = Path(f"artifacts/results/{dataset_name}/{split_id}/post_hoc_summary.json")
+    post_hoc_file = Path(
+        f"results/reports/reanalysis_v2/{dataset_name}/{split_id}/post_hoc_summary.json"
+    )
 
     # Load spatial coordinates
     coords = np.load(prep_dir / "spatial_test.npy")
@@ -81,7 +83,7 @@ def plot_boundary_analysis(
         c="#1f77b4",
         s=8,
         alpha=0.6,
-        label=f"Deep Interior ({np.sum(~sec_bnd):,} cells, 85.4%)",
+        label=f"Deep Interior ({np.sum(~sec_bnd):,} cells)",
     )
     ax_map.scatter(
         sec_pts[sec_bnd, 0],
@@ -166,6 +168,13 @@ def plot_boundary_analysis(
 
     out_pdf = OUT_DIR / f"fig3_boundary_stratification{out_suffix}.pdf"
     out_png = OUT_DIR / f"fig3_boundary_stratification{out_suffix}.png"
+    fig.text(
+        0.5,
+        -0.01,
+        "Historical fits; training validity issues remain (docs/reanalysis-v2.md)",
+        ha="center",
+        fontsize=8,
+    )
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()

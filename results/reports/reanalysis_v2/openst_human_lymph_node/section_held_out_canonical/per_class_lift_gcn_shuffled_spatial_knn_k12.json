@@ -1,0 +1,145 @@
+{
+  "classes": [
+    {
+      "class_name": "CAF",
+      "support": 1805,
+      "gnn_f1_mean": 0.06962312336714731,
+      "gnn_f1_std": 0.04174165365160183,
+      "mlp_f1_mean": 0.5889845196839124,
+      "mlp_f1_std": 0.004568793987216706,
+      "lift_mean": -0.5193613963167649,
+      "lift_std": 0.043619850730959
+    },
+    {
+      "class_name": "CAM",
+      "support": 349,
+      "gnn_f1_mean": 0.006597983973536096,
+      "gnn_f1_std": 0.008005896612063038,
+      "mlp_f1_mean": 0.4817153443173887,
+      "mlp_f1_std": 0.015177289799424891,
+      "lift_mean": -0.47511736034385255,
+      "lift_std": 0.017622323591591854
+    },
+    {
+      "class_name": "Cortex_CCL21",
+      "support": 17,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "Cytotoxic_IFN_signaling",
+      "support": 21,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "Fibroblasts",
+      "support": 807,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "Germinal_Center_Plasma_IgM_B_cell",
+      "support": 3597,
+      "gnn_f1_mean": 0.20765402086282153,
+      "gnn_f1_std": 0.05385493394434575,
+      "mlp_f1_mean": 0.7142512379528237,
+      "mlp_f1_std": 0.0016799884209235557,
+      "lift_mean": -0.5065972170900022,
+      "lift_std": 0.05404836412651517
+    },
+    {
+      "class_name": "High_Endothelial_Venules",
+      "support": 2076,
+      "gnn_f1_mean": 0.012856063631650977,
+      "gnn_f1_std": 0.028601325120797255,
+      "mlp_f1_mean": 0.27177759529650664,
+      "mlp_f1_std": 0.006544069368594264,
+      "lift_mean": -0.25892153166485554,
+      "lift_std": 0.028387106096055627
+    },
+    {
+      "class_name": "M1_macrophages",
+      "support": 4499,
+      "gnn_f1_mean": 0.14808829672375326,
+      "gnn_f1_std": 0.08052213485855365,
+      "mlp_f1_mean": 0.49454304052562936,
+      "mlp_f1_std": 0.0029293674251045392,
+      "lift_mean": -0.34645474380187613,
+      "lift_std": 0.08047960972120276
+    },
+    {
+      "class_name": "Macrophages",
+      "support": 42,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "Plasma_IgA",
+      "support": 878,
+      "gnn_f1_mean": 0.00022497187851518562,
+      "gnn_f1_std": 0.0007114235455946862,
+      "mlp_f1_mean": 0.15993485609144215,
+      "mlp_f1_std": 0.015533486644429327,
+      "lift_mean": -0.15970988421292698,
+      "lift_std": 0.015324591285492028
+    },
+    {
+      "class_name": "Plasma_IgG",
+      "support": 7947,
+      "gnn_f1_mean": 0.3974628041451275,
+      "gnn_f1_std": 0.035138824082209946,
+      "mlp_f1_mean": 0.7945432719002158,
+      "mlp_f1_std": 0.001633268768494414,
+      "lift_mean": -0.39708046775508826,
+      "lift_std": 0.035015637352058135
+    },
+    {
+      "class_name": "T_cell",
+      "support": 2549,
+      "gnn_f1_mean": 0.06095335082576292,
+      "gnn_f1_std": 0.03752881611985214,
+      "mlp_f1_mean": 0.4862116339872989,
+      "mlp_f1_std": 0.005183088584902237,
+      "lift_mean": -0.4252582831615359,
+      "lift_std": 0.03716328522121349
+    },
+    {
+      "class_name": "Tumor",
+      "support": 9107,
+      "gnn_f1_mean": 0.4232730810978366,
+      "gnn_f1_std": 0.03216765280341022,
+      "mlp_f1_mean": 0.932841449987609,
+      "mlp_f1_std": 0.0004217874459342316,
+      "lift_mean": -0.5095683688897722,
+      "lift_std": 0.03215054703060592
+    },
+    {
+      "class_name": "Tumor_Keratin_Pearl",
+      "support": 378,
+      "gnn_f1_mean": 0.05068466362716245,
+      "gnn_f1_std": 0.03860924611692318,
+      "mlp_f1_mean": 0.5990050497309831,
+      "mlp_f1_std": 0.017022217048163132,
+      "lift_mean": -0.5483203861038206,
+      "lift_std": 0.03860278002856985
+    }
+  ],
+  "overall_lift": -0.29617068852432105
+}

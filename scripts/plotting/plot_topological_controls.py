@@ -91,6 +91,7 @@ def plot_topological_controls(
         ax.axhline(mlp_mean, color="#666666", linestyle="--", linewidth=1.5, zorder=2)
 
         sns.barplot(
+            errorbar="sd",
             data=df_k,
             x="Model_Clean",
             y="test_macro_f1",
@@ -117,6 +118,13 @@ def plot_topological_controls(
 
     out_pdf = OUT_DIR / f"fig2_topological_controls{out_suffix}.pdf"
     out_png = OUT_DIR / f"fig2_topological_controls{out_suffix}.png"
+    fig.text(
+        0.5,
+        -0.01,
+        "Bars: mean ± sample SD across seeds. Historical fits; training validity issues remain (docs/reanalysis-v2.md)",
+        ha="center",
+        fontsize=8,
+    )
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()

@@ -47,22 +47,9 @@ def compute_matched_graph_lift(
     if gnn_manifest.seed != mlp_manifest.seed:
         mismatches.append(f"Seed mismatch: GNN={gnn_manifest.seed} vs MLP={mlp_manifest.seed}")
 
-    # Ported fix from scgraph-bench commit 2bc5c9a: metadata tolerance
+    # A matching partial configuration does not prove identical feature content.
     if gnn_manifest.feature_manifest_hash != mlp_manifest.feature_manifest_hash:
-        if (
-            gnn_manifest.split_hash == mlp_manifest.split_hash
-            and gnn_manifest.seed == mlp_manifest.seed
-            and gnn_manifest.preprocessing_config_hash == mlp_manifest.preprocessing_config_hash
-        ):
-            logger.warning(
-                "Feature manifest hash differs (GNN=%s vs MLP=%s), but split_hash and preprocessing_config_hash match identically.",
-                gnn_manifest.feature_manifest_hash[:16],
-                mlp_manifest.feature_manifest_hash[:16],
-            )
-        else:
-            mismatches.append(
-                f"Feature manifest hash mismatch: GNN={gnn_manifest.feature_manifest_hash} vs MLP={mlp_manifest.feature_manifest_hash}"
-            )
+        mismatches.append("Feature manifest hash mismatch")
 
     if gnn_manifest.preprocessing_config_hash != mlp_manifest.preprocessing_config_hash:
         mismatches.append(
@@ -75,6 +62,8 @@ def compute_matched_graph_lift(
 
     is_valid = len(mismatches) == 0
     notes = "; ".join(mismatches) if mismatches else None
+    if not is_valid:
+        raise ValueError(f"Invalid matched graph lift: {notes}")
 
     lift = gnn_macro_f1 - mlp_macro_f1
     bal_acc_lift = gnn_balanced_acc - mlp_balanced_acc

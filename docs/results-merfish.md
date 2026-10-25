@@ -1,63 +1,42 @@
-# Empirical Benchmark Results: MERFISH Mouse Spinal Cord (`mouse_held_out_canonical`)
+# MERFISH: historical prediction reanalysis
 
-**Benchmark Platform**: MERFISH (500 genes)  
-**Dataset**: `merfish_mouse_spinal_cord`  
-**Split**: `mouse_held_out_canonical` (Mouse F4 held-out; 3 sections, 8,507 test cells across 60 cell classes)  
-**Pre-Registered Comparison Grid**: 4 GNN Architectures × 7 Graph Topologies × 10 Seeds (42–51) = 280 GPU Runs  
-**Parity Equivalence Margin**: $\epsilon = \pm 0.0069$ ($2\sigma_{\text{MLP}}$)  
-**Baseline Reference**: Spatially Ignorant MLP Test Macro-F1 = $\mathbf{0.5273 \pm 0.0033}$; Random Forest = $0.4683$  
-**Audit Ingestion Hash**: `d2b2a697d1d3d0113dff373c246329e542a9349c4d29b25ddd039ab9cb2a4f8c` (100% 4-Layer PASS)  
+Retrospective evaluation of historical fits. GNN training used pooled BatchNorm over train/validation/test features and stale training-mode validation predictions. These results do not establish strict-inductive benefit; corrected training is required. Legacy shuffled controls mix sections and rewired controls lose edge reciprocity. Seed uncertainty describes optimization on one fixed holdout, not biological replication.
 
----
+Dataset: `merfish_mouse_spinal_cord`; split: `mouse_held_out_canonical`.
+Training groups: F3, M4, F5; held-out test groups: F4.
+Test cells/spots: 8,507; evaluated: 8,507; intersection classes: 60; class coverage: 100.00%.
+Excluded test classes: none.
+MLP test F1: 0.5273 ± 0.0035; RF: 0.4683; epsilon = max(0.005, 2 × sample SD) = 0.0069.
 
-## 1. Primary Evidence Table: 10-Seed Aggregated Performance
+Boundary diagnostics use the outer 15% by distance to each section's convex hull; this is not an internal histological boundary annotation.
 
-| Model | Graph Construction | GNN Test F1 | Baseline MLP | Matched Lift ($\Delta$) | 90% TOST CI | FWER Decision ($\alpha=0.05$) |
-|:---|:---|:---:|:---:|:---:|:---:|:---:|
-| **GCN** | `spatial_knn_k6` | $0.2004 \pm 0.0082$ | $0.5273 \pm 0.0033$ | $-0.3269 \pm 0.0089$ | $[-0.3323, -0.3215]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GCN** | `spatial_knn_k12` | $0.1577 \pm 0.0075$ | $0.5273 \pm 0.0033$ | $-0.3696 \pm 0.0085$ | $[-0.3748, -0.3644]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GCN** | `rewired_spatial_knn_k6` | $0.0478 \pm 0.0023$ | $0.5273 \pm 0.0033$ | $-0.4795 \pm 0.0037$ | $[-0.4818, -0.4772]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GCN** | `rewired_spatial_knn_k12` | $0.0345 \pm 0.0095$ | $0.5273 \pm 0.0033$ | $-0.4928 \pm 0.0103$ | $[-0.4991, -0.4865]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GCN** | `shuffled_spatial_knn_k6` | $0.1186 \pm 0.0052$ | $0.5273 \pm 0.0033$ | $-0.4087 \pm 0.0045$ | $[-0.4114, -0.4059]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GCN** | `shuffled_spatial_knn_k12` | $0.0471 \pm 0.0197$ | $0.5273 \pm 0.0033$ | $-0.4802 \pm 0.0200$ | $[-0.4924, -0.4680]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GCN** | `bipartite_ref_k20` | $0.5253 \pm 0.0311$ | $0.5273 \pm 0.0033$ | $-0.0020 \pm 0.0314$ | $[-0.0212, +0.0172]$ | **PARITY** |
-| **GAT** | `spatial_knn_k6` | $0.2172 \pm 0.0058$ | $0.5273 \pm 0.0033$ | $-0.3101 \pm 0.0081$ | $[-0.3150, -0.3051]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GAT** | `spatial_knn_k12` | $0.1810 \pm 0.0128$ | $0.5273 \pm 0.0033$ | $-0.3462 \pm 0.0142$ | $[-0.3549, -0.3376]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GAT** | `rewired_spatial_knn_k6` | $0.0583 \pm 0.0145$ | $0.5273 \pm 0.0033$ | $-0.4690 \pm 0.0156$ | $[-0.4785, -0.4594]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GAT** | `rewired_spatial_knn_k12` | $0.0350 \pm 0.0221$ | $0.5273 \pm 0.0033$ | $-0.4923 \pm 0.0234$ | $[-0.5065, -0.4780]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GAT** | `shuffled_spatial_knn_k6` | $0.1771 \pm 0.0211$ | $0.5273 \pm 0.0033$ | $-0.3502 \pm 0.0207$ | $[-0.3628, -0.3375]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GAT** | `shuffled_spatial_knn_k12` | $0.1176 \pm 0.0198$ | $0.5273 \pm 0.0033$ | $-0.4097 \pm 0.0191$ | $[-0.4213, -0.3981]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GAT** | `bipartite_ref_k20` | $0.5336 \pm 0.0209$ | $0.5273 \pm 0.0033$ | $+0.0063 \pm 0.0184$ | $[-0.0049, +0.0176]$ | **PARITY** |
-| **GIN** | `spatial_knn_k6` | $0.2061 \pm 0.0081$ | $0.5273 \pm 0.0033$ | $-0.3212 \pm 0.0099$ | $[-0.3273, -0.3152]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GIN** | `spatial_knn_k12` | $0.1587 \pm 0.0035$ | $0.5273 \pm 0.0033$ | $-0.3686 \pm 0.0061$ | $[-0.3723, -0.3649]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GIN** | `rewired_spatial_knn_k6` | $0.0509 \pm 0.0027$ | $0.5273 \pm 0.0033$ | $-0.4764 \pm 0.0035$ | $[-0.4785, -0.4742]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GIN** | `rewired_spatial_knn_k12` | $0.0379 \pm 0.0036$ | $0.5273 \pm 0.0033$ | $-0.4894 \pm 0.0047$ | $[-0.4923, -0.4865]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GIN** | `shuffled_spatial_knn_k6` | $0.1060 \pm 0.0074$ | $0.5273 \pm 0.0033$ | $-0.4213 \pm 0.0079$ | $[-0.4261, -0.4165]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GIN** | `shuffled_spatial_knn_k12` | $0.0451 \pm 0.0132$ | $0.5273 \pm 0.0033$ | $-0.4822 \pm 0.0129$ | $[-0.4900, -0.4743]$ | **NEGATIVE LIFT** ($p < 10^{-15}$) |
-| **GIN** | `bipartite_ref_k20` | $\mathbf{0.5640 \pm 0.0094}$ | $0.5273 \pm 0.0033$ | $\mathbf{+0.0367 \pm 0.0111}$ | $[+0.0300, +0.0435]$ | **POSITIVE LIFT** ($p = 1.01 \times 10^{-5}$) |
-| **GraphSAGE** | `spatial_knn_k6` | $0.4966 \pm 0.0074$ | $0.5273 \pm 0.0033$ | $-0.0307 \pm 0.0091$ | $[-0.0363, -0.0252]$ | **NEGATIVE LIFT** ($p = 1.28 \times 10^{-5}$) |
-| **GraphSAGE** | `spatial_knn_k12` | $0.5020 \pm 0.0064$ | $0.5273 \pm 0.0033$ | $-0.0253 \pm 0.0078$ | $[-0.0301, -0.0206]$ | **NEGATIVE LIFT** ($p = 2.85 \times 10^{-5}$) |
-| **GraphSAGE** | `rewired_spatial_knn_k6` | $0.4885 \pm 0.0165$ | $0.5273 \pm 0.0033$ | $-0.0388 \pm 0.0172$ | $[-0.0493, -0.0283]$ | **NEGATIVE LIFT** ($p = 1.75 \times 10^{-4}$) |
-| **GraphSAGE** | `rewired_spatial_knn_k12` | $0.4937 \pm 0.0085$ | $0.5273 \pm 0.0033$ | $-0.0336 \pm 0.0107$ | $[-0.0402, -0.0270]$ | **NEGATIVE LIFT** ($p = 1.93 \times 10^{-5}$) |
-| **GraphSAGE** | `shuffled_spatial_knn_k6` | $0.4837 \pm 0.0129$ | $0.5273 \pm 0.0033$ | $-0.0436 \pm 0.0126$ | $[-0.0512, -0.0359]$ | **NEGATIVE LIFT** ($p = 1.54 \times 10^{-5}$) |
-| **GraphSAGE** | `shuffled_spatial_knn_k12` | $0.4849 \pm 0.0210$ | $0.5273 \pm 0.0033$ | $-0.0424 \pm 0.0219$ | $[-0.0558, -0.0290]$ | **NEGATIVE LIFT** ($p = 4.48 \times 10^{-4}$) |
-| **GraphSAGE** | `bipartite_ref_k20` | $0.5397 \pm 0.0263$ | $0.5273 \pm 0.0033$ | $+0.0124 \pm 0.0271$ | $[-0.0042, +0.0290]$ | **PARITY** |
-
----
-
-## 2. Post-Hoc Stratification: Interior vs. Boundary Margin
-
-Cells were geometrically stratified by distance to the section convex hull (outer 15% classified as boundary margin cells):
-- **Deep Interior Cells**: $N = 7,229$ ($85.0\%$)
-- **Boundary Margin Cells**: $N = 1,278$ ($15.0\%$)
-
-| Model & Graph | Overall Lift ($\Delta$) | Interior Lift ($\Delta_{\text{int}}$) | Boundary Lift ($\Delta_{\text{bnd}}$) | Margin Effect ($\Delta_{\text{bnd}} - \Delta_{\text{int}}$) |
-|:---|:---:|:---:|:---:|:---:|
-| **GCN** on `spatial_knn_k6` | $-0.3269$ | $-0.3204$ | $-0.3475$ | **$-0.0271$** (exacerbated collapse) |
-| **GAT** on `spatial_knn_k6` | $-0.3101$ | $-0.3040$ | $-0.3344$ | **$-0.0304$** (exacerbated collapse) |
-| **GIN** on `spatial_knn_k6` | $-0.3212$ | $-0.3168$ | $-0.3359$ | **$-0.0191$** (exacerbated collapse) |
-| **GraphSAGE** on `spatial_knn_k6` | $-0.0307$ | $-0.0234$ | $-0.0360$ | **$-0.0126$** (exacerbated collapse) |
-| **GIN** on `bipartite_ref_k20` | $\mathbf{+0.0367}$ | $\mathbf{+0.0398}$ | $-0.0019$ | **$-0.0417$** |
-
-**Scientific Takeaway**:  
-Spatial message passing causes catastrophic degradation throughout the entire tissue, but performance deteriorates **even further at the tissue boundary** ($\approx -0.02$ to $-0.03$ additional loss) due to truncated neighborhoods and forced cross-lineage edges at tissue edges.
+| Model | Topology | GNN F1 | Paired lift | 90% CI (unadjusted) | Holm decision | Interior lift | Boundary lift |
+| --- | --- | ---: | ---: | --- | --- | ---: | ---: |
+| GCN | spatial_knn_k6 | 0.2004 | -0.3269 | [-0.3323, -0.3215] | Negative lift | -0.3163 | -0.2937 |
+| GCN | spatial_knn_k12 | 0.1577 | -0.3696 | [-0.3748, -0.3644] | Negative lift | -0.3621 | -0.3274 |
+| GCN | rewired_spatial_knn_k6 | 0.0478 | -0.4795 | [-0.4818, -0.4772] | Negative lift | -0.4731 | -0.3961 |
+| GCN | rewired_spatial_knn_k12 | 0.0345 | -0.4928 | [-0.4991, -0.4865] | Negative lift | -0.4844 | -0.4123 |
+| GCN | shuffled_spatial_knn_k6 | 0.1186 | -0.4087 | [-0.4114, -0.4059] | Negative lift | -0.3948 | -0.3575 |
+| GCN | shuffled_spatial_knn_k12 | 0.0471 | -0.4802 | [-0.4924, -0.4680] | Negative lift | -0.4685 | -0.4000 |
+| GCN | bipartite_ref_k20 | 0.5253 | -0.0020 | [-0.0212, +0.0172] | Inconclusive | -0.0018 | -0.0398 |
+| GAT | spatial_knn_k6 | 0.2172 | -0.3101 | [-0.3150, -0.3051] | Negative lift | -0.2980 | -0.2868 |
+| GAT | spatial_knn_k12 | 0.1810 | -0.3462 | [-0.3549, -0.3376] | Negative lift | -0.3355 | -0.3134 |
+| GAT | rewired_spatial_knn_k6 | 0.0583 | -0.4690 | [-0.4785, -0.4594] | Negative lift | -0.4633 | -0.3854 |
+| GAT | rewired_spatial_knn_k12 | 0.0350 | -0.4923 | [-0.5065, -0.4780] | Negative lift | -0.4825 | -0.4083 |
+| GAT | shuffled_spatial_knn_k6 | 0.1771 | -0.3502 | [-0.3628, -0.3375] | Negative lift | -0.3467 | -0.2976 |
+| GAT | shuffled_spatial_knn_k12 | 0.1176 | -0.4097 | [-0.4213, -0.3981] | Negative lift | -0.4011 | -0.3460 |
+| GAT | bipartite_ref_k20 | 0.5336 | +0.0063 | [-0.0049, +0.0176] | Inconclusive | +0.0094 | -0.0296 |
+| GIN | spatial_knn_k6 | 0.2061 | -0.3212 | [-0.3273, -0.3152] | Negative lift | -0.3111 | -0.2876 |
+| GIN | spatial_knn_k12 | 0.1587 | -0.3686 | [-0.3723, -0.3649] | Negative lift | -0.3597 | -0.3293 |
+| GIN | rewired_spatial_knn_k6 | 0.0509 | -0.4764 | [-0.4785, -0.4742] | Negative lift | -0.4699 | -0.3933 |
+| GIN | rewired_spatial_knn_k12 | 0.0379 | -0.4894 | [-0.4923, -0.4865] | Negative lift | -0.4814 | -0.4081 |
+| GIN | shuffled_spatial_knn_k6 | 0.1060 | -0.4213 | [-0.4261, -0.4165] | Negative lift | -0.4098 | -0.3577 |
+| GIN | shuffled_spatial_knn_k12 | 0.0451 | -0.4822 | [-0.4900, -0.4743] | Negative lift | -0.4699 | -0.3993 |
+| GIN | bipartite_ref_k20 | 0.5640 | +0.0367 | [+0.0300, +0.0435] | Positive lift | +0.0408 | -0.0115 |
+| GRAPHSAGE | spatial_knn_k6 | 0.4966 | -0.0307 | [-0.0363, -0.0252] | Negative lift | -0.0234 | -0.0360 |
+| GRAPHSAGE | spatial_knn_k12 | 0.5020 | -0.0253 | [-0.0301, -0.0206] | Negative lift | -0.0184 | -0.0313 |
+| GRAPHSAGE | rewired_spatial_knn_k6 | 0.4885 | -0.0388 | [-0.0493, -0.0283] | Negative lift | -0.0341 | -0.0468 |
+| GRAPHSAGE | rewired_spatial_knn_k12 | 0.4937 | -0.0336 | [-0.0402, -0.0270] | Negative lift | -0.0294 | -0.0331 |
+| GRAPHSAGE | shuffled_spatial_knn_k6 | 0.4837 | -0.0436 | [-0.0512, -0.0359] | Negative lift | -0.0404 | -0.0388 |
+| GRAPHSAGE | shuffled_spatial_knn_k12 | 0.4849 | -0.0424 | [-0.0558, -0.0290] | Inconclusive | -0.0393 | -0.0378 |
+| GRAPHSAGE | bipartite_ref_k20 | 0.5397 | +0.0124 | [-0.0042, +0.0290] | Inconclusive | +0.0162 | -0.0184 |

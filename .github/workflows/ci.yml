@@ -29,18 +29,18 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --system -e ".[dev]"
+          uv sync --frozen --all-extras
 
       - name: Run Ruff Linter & Formatter Check (Mandatory)
         run: |
-          ruff check src tests scripts
-          ruff format --check src tests scripts
+          uv run --frozen ruff check src tests scripts
+          uv run --frozen ruff format --check src tests scripts
 
       - name: Run Mypy (Informational / Non-blocking)
         continue-on-error: true
         run: |
-          mypy --python-version ${{ matrix.python-version }} --explicit-package-bases src tests scripts
+          uv run --frozen mypy --python-version ${{ matrix.python-version }} --explicit-package-bases src tests scripts
 
       - name: Run Pytest Suite & Fixture Smoke Pipeline (Mandatory)
         run: |
-          pytest -v tests
+          uv run --frozen pytest -v tests

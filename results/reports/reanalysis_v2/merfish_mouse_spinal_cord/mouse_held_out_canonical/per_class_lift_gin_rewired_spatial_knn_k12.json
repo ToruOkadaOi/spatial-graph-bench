@@ -1,0 +1,605 @@
+{
+  "classes": [
+    {
+      "class_name": "DH-ex-Cpne4",
+      "support": 54,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.7629278049820264,
+      "mlp_f1_std": 0.023627865249857744,
+      "lift_mean": -0.7629278049820264,
+      "lift_std": 0.023627865249857744
+    },
+    {
+      "class_name": "DH-ex-Gpr83",
+      "support": 43,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.07863641941512961,
+      "mlp_f1_std": 0.04826413854942629,
+      "lift_mean": -0.07863641941512961,
+      "lift_std": 0.04826413854942629
+    },
+    {
+      "class_name": "DH-ex-Grp",
+      "support": 13,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "DH-ex-Grpr",
+      "support": 73,
+      "gnn_f1_mean": 0.0049390243902439025,
+      "gnn_f1_std": 0.010413369496022475,
+      "mlp_f1_mean": 0.7046578618417147,
+      "mlp_f1_std": 0.012758468082319997,
+      "lift_mean": -0.6997188374514709,
+      "lift_std": 0.01563593428240828
+    },
+    {
+      "class_name": "DH-ex-Maf/Cck",
+      "support": 78,
+      "gnn_f1_mean": 0.03894730145849594,
+      "gnn_f1_std": 0.03195119882773686,
+      "mlp_f1_mean": 0.6832109496157119,
+      "mlp_f1_std": 0.008468791591710436,
+      "lift_mean": -0.6442636481572159,
+      "lift_std": 0.03014670875363582
+    },
+    {
+      "class_name": "DH-ex-Maf/Cpne4",
+      "support": 23,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.06143386243386244,
+      "mlp_f1_std": 0.06956953913096105,
+      "lift_mean": -0.06143386243386244,
+      "lift_std": 0.06956953913096105
+    },
+    {
+      "class_name": "DH-ex-Maf/Slc17a8",
+      "support": 17,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.04163742690058479,
+      "mlp_f1_std": 0.07156136312696379,
+      "lift_mean": -0.04163742690058479,
+      "lift_std": 0.07156136312696379
+    },
+    {
+      "class_name": "DH-ex-Nmu/Tac2",
+      "support": 117,
+      "gnn_f1_mean": 0.1065958209346641,
+      "gnn_f1_std": 0.03652090908466495,
+      "mlp_f1_mean": 0.8566313276096633,
+      "mlp_f1_std": 0.009614396798953697,
+      "lift_mean": -0.7500355066749991,
+      "lift_std": 0.034860367241877806
+    },
+    {
+      "class_name": "DH-ex-Prkcg/Cck",
+      "support": 32,
+      "gnn_f1_mean": 0.002105263157894737,
+      "gnn_f1_std": 0.00665742665298606,
+      "mlp_f1_mean": 0.566487806670595,
+      "mlp_f1_std": 0.02697070695000259,
+      "lift_mean": -0.5643825435127001,
+      "lift_std": 0.026943833529548697
+    },
+    {
+      "class_name": "DH-ex-Prkcg/Nts",
+      "support": 153,
+      "gnn_f1_mean": 0.05764623784178062,
+      "gnn_f1_std": 0.03134957887555357,
+      "mlp_f1_mean": 0.8259624916784569,
+      "mlp_f1_std": 0.007279978790916591,
+      "lift_mean": -0.7683162538366761,
+      "lift_std": 0.032719513662245556
+    },
+    {
+      "class_name": "DH-ex-Prkcg/Rxfp1",
+      "support": 28,
+      "gnn_f1_mean": 0.0027396687301321733,
+      "gnn_f1_std": 0.00686827332738451,
+      "mlp_f1_mean": 0.5473315283777527,
+      "mlp_f1_std": 0.026796305592406578,
+      "lift_mean": -0.5445918596476206,
+      "lift_std": 0.03190414100374262
+    },
+    {
+      "class_name": "DH-ex-Reln",
+      "support": 50,
+      "gnn_f1_mean": 0.006951871657754011,
+      "gnn_f1_std": 0.014805623931722382,
+      "mlp_f1_mean": 0.7921795394127201,
+      "mlp_f1_std": 0.02867180239645562,
+      "lift_mean": -0.7852276677549661,
+      "lift_std": 0.031054621518449274
+    },
+    {
+      "class_name": "DH-ex-Reln/Nmur2",
+      "support": 148,
+      "gnn_f1_mean": 0.06321083743828516,
+      "gnn_f1_std": 0.031752338647360365,
+      "mlp_f1_mean": 0.8664123179900713,
+      "mlp_f1_std": 0.009379671326537718,
+      "lift_mean": -0.8032014805517862,
+      "lift_std": 0.033128214512010465
+    },
+    {
+      "class_name": "DH-ex-Reln/Npff",
+      "support": 50,
+      "gnn_f1_mean": 0.008525934165533721,
+      "gnn_f1_std": 0.014320394790453581,
+      "mlp_f1_mean": 0.6191235877250243,
+      "mlp_f1_std": 0.032116109672056546,
+      "lift_mean": -0.6105976535594906,
+      "lift_std": 0.030197210030054576
+    },
+    {
+      "class_name": "DH-ex-Rreb1",
+      "support": 23,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0150997150997151,
+      "mlp_f1_std": 0.03184007651498236,
+      "lift_mean": -0.0150997150997151,
+      "lift_std": 0.03184007651498236
+    },
+    {
+      "class_name": "DH-ex-Sox5",
+      "support": 42,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.5057366766406199,
+      "mlp_f1_std": 0.016754195090871286,
+      "lift_mean": -0.5057366766406199,
+      "lift_std": 0.016754195090871286
+    },
+    {
+      "class_name": "DH-ex-Sox5/Tac1",
+      "support": 79,
+      "gnn_f1_mean": 0.01225949757051853,
+      "gnn_f1_std": 0.01753801938084841,
+      "mlp_f1_mean": 0.4656664070679765,
+      "mlp_f1_std": 0.03167922480024991,
+      "lift_mean": -0.453406909497458,
+      "lift_std": 0.03999068784871921
+    },
+    {
+      "class_name": "DH-ex-Tac2",
+      "support": 22,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.13932120571720125,
+      "mlp_f1_std": 0.09630135036341816,
+      "lift_mean": -0.13932120571720125,
+      "lift_std": 0.09630135036341816
+    },
+    {
+      "class_name": "DH-in-Cdh3",
+      "support": 193,
+      "gnn_f1_mean": 0.06968375650903429,
+      "gnn_f1_std": 0.024758733537910964,
+      "mlp_f1_mean": 0.7509466928840054,
+      "mlp_f1_std": 0.008798245207875914,
+      "lift_mean": -0.6812629363749712,
+      "lift_std": 0.022946757017942
+    },
+    {
+      "class_name": "DH-in-Kcnip2",
+      "support": 12,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "DH-in-Klhl14",
+      "support": 26,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.007407407407407407,
+      "mlp_f1_std": 0.02342427896421022,
+      "lift_mean": -0.007407407407407407,
+      "lift_std": 0.02342427896421022
+    },
+    {
+      "class_name": "DH-in-Npy",
+      "support": 55,
+      "gnn_f1_mean": 0.0055944713459639885,
+      "gnn_f1_std": 0.01207584462937639,
+      "mlp_f1_mean": 0.6420879124225564,
+      "mlp_f1_std": 0.039579208348364585,
+      "lift_mean": -0.6364934410765923,
+      "lift_std": 0.04204316828872284
+    },
+    {
+      "class_name": "DH-in-Npy2r",
+      "support": 47,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.6213922684729744,
+      "mlp_f1_std": 0.02201129705428637,
+      "lift_mean": -0.6213922684729744,
+      "lift_std": 0.02201129705428637
+    },
+    {
+      "class_name": "DH-in-Pdyn",
+      "support": 47,
+      "gnn_f1_mean": 0.012207792207792207,
+      "gnn_f1_std": 0.02002088450644057,
+      "mlp_f1_mean": 0.5908542690480278,
+      "mlp_f1_std": 0.041880672769266915,
+      "lift_mean": -0.5786464768402357,
+      "lift_std": 0.038192760823943434
+    },
+    {
+      "class_name": "DH-in-Pdyn/Gal",
+      "support": 43,
+      "gnn_f1_mean": 0.017777777777777778,
+      "gnn_f1_std": 0.03060378931960722,
+      "mlp_f1_mean": 0.7499297184226231,
+      "mlp_f1_std": 0.03129751842014932,
+      "lift_mean": -0.7321519406448453,
+      "lift_std": 0.05430694074749733
+    },
+    {
+      "class_name": "DH-in-Rorb",
+      "support": 52,
+      "gnn_f1_mean": 0.007145135566188197,
+      "gnn_f1_std": 0.015066270173791738,
+      "mlp_f1_mean": 0.7838749119255818,
+      "mlp_f1_std": 0.017139404335624178,
+      "lift_mean": -0.7767297763593934,
+      "lift_std": 0.025972221354496332
+    },
+    {
+      "class_name": "DM-ex-Zfhx3",
+      "support": 196,
+      "gnn_f1_mean": 0.023779857955175333,
+      "gnn_f1_std": 0.01984155020644183,
+      "mlp_f1_mean": 0.6831402649068518,
+      "mlp_f1_std": 0.013957501998759496,
+      "lift_mean": -0.6593604069516765,
+      "lift_std": 0.019253931248544444
+    },
+    {
+      "class_name": "M-ex-Neurod2",
+      "support": 3,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "M-ex-Vsx2",
+      "support": 38,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.2736321480295417,
+      "mlp_f1_std": 0.059167967818199656,
+      "lift_mean": -0.2736321480295417,
+      "lift_std": 0.059167967818199656
+    },
+    {
+      "class_name": "M-ex-Vsx2/Shox2",
+      "support": 46,
+      "gnn_f1_mean": 0.00392156862745098,
+      "gnn_f1_std": 0.012401088863405409,
+      "mlp_f1_mean": 0.7946505206449459,
+      "mlp_f1_std": 0.019988792669416697,
+      "lift_mean": -0.7907289520174948,
+      "lift_std": 0.025504239058993947
+    },
+    {
+      "class_name": "M-in-Tfap2b",
+      "support": 136,
+      "gnn_f1_mean": 0.009647608981037854,
+      "gnn_f1_std": 0.017314051037353048,
+      "mlp_f1_mean": 0.5875064014076123,
+      "mlp_f1_std": 0.018239477359656912,
+      "lift_mean": -0.5778587924265745,
+      "lift_std": 0.02357281960460405
+    },
+    {
+      "class_name": "MV-ex-Shox2",
+      "support": 61,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.3858724392949158,
+      "mlp_f1_std": 0.046272919626964795,
+      "lift_mean": -0.3858724392949158,
+      "lift_std": 0.046272919626964795
+    },
+    {
+      "class_name": "MV-ex-Syt2",
+      "support": 193,
+      "gnn_f1_mean": 0.023193671214749103,
+      "gnn_f1_std": 0.01737379321902143,
+      "mlp_f1_mean": 0.7385392640461627,
+      "mlp_f1_std": 0.009682427368605816,
+      "lift_mean": -0.7153455928314134,
+      "lift_std": 0.01958847934289956
+    },
+    {
+      "class_name": "MV-in-Chrna2",
+      "support": 16,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.6009219116071174,
+      "mlp_f1_std": 0.05875836722704392,
+      "lift_mean": -0.6009219116071174,
+      "lift_std": 0.05875836722704392
+    },
+    {
+      "class_name": "MV-in-Esrrb",
+      "support": 59,
+      "gnn_f1_mean": 0.003125,
+      "gnn_f1_std": 0.009882117688026186,
+      "mlp_f1_mean": 0.3003278000189829,
+      "mlp_f1_std": 0.042637966023392884,
+      "lift_mean": -0.2972028000189829,
+      "lift_std": 0.0440868342052565
+    },
+    {
+      "class_name": "MV-in-Gabra1",
+      "support": 260,
+      "gnn_f1_mean": 0.05195788135828994,
+      "gnn_f1_std": 0.01427322419046581,
+      "mlp_f1_mean": 0.6900116664652264,
+      "mlp_f1_std": 0.009059420011713327,
+      "lift_mean": -0.6380537851069363,
+      "lift_std": 0.013088351954212213
+    },
+    {
+      "class_name": "MV-in-Gm26673",
+      "support": 213,
+      "gnn_f1_mean": 0.08663454530819739,
+      "gnn_f1_std": 0.020645816722747394,
+      "mlp_f1_mean": 0.7751927984474065,
+      "mlp_f1_std": 0.009523155305692444,
+      "lift_mean": -0.6885582531392092,
+      "lift_std": 0.018014208580250556
+    },
+    {
+      "class_name": "MV-in-Sema5b",
+      "support": 65,
+      "gnn_f1_mean": 0.28702456523859093,
+      "gnn_f1_std": 0.06684177443185552,
+      "mlp_f1_mean": 0.6189129870569772,
+      "mlp_f1_std": 0.018620346426401407,
+      "lift_mean": -0.3318884218183862,
+      "lift_std": 0.05818889361945689
+    },
+    {
+      "class_name": "Schwann cell",
+      "support": 108,
+      "gnn_f1_mean": 0.19822832384939715,
+      "gnn_f1_std": 0.03973326495222579,
+      "mlp_f1_mean": 0.8003123959408505,
+      "mlp_f1_std": 0.009952072975027803,
+      "lift_mean": -0.6020840720914533,
+      "lift_std": 0.042577682194830255
+    },
+    {
+      "class_name": "VH-in-Chat",
+      "support": 1,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "alpha motoneuron",
+      "support": 204,
+      "gnn_f1_mean": 0.14091172855742762,
+      "gnn_f1_std": 0.016062310629747827,
+      "mlp_f1_mean": 0.8534488855801314,
+      "mlp_f1_std": 0.004858822255116843,
+      "lift_mean": -0.7125371570227037,
+      "lift_std": 0.013379781498129337
+    },
+    {
+      "class_name": "astrocyte-1",
+      "support": 1048,
+      "gnn_f1_mean": 0.10237626855890081,
+      "gnn_f1_std": 0.06751254221674667,
+      "mlp_f1_mean": 0.9115784922206309,
+      "mlp_f1_std": 0.0024217721765072754,
+      "lift_mean": -0.80920222366173,
+      "lift_std": 0.06665968561945003
+    },
+    {
+      "class_name": "astrocyte-2",
+      "support": 574,
+      "gnn_f1_mean": 0.1485077912699176,
+      "gnn_f1_std": 0.01987276414661492,
+      "mlp_f1_mean": 0.9204908506802225,
+      "mlp_f1_std": 0.0032797802724666993,
+      "lift_mean": -0.771983059410305,
+      "lift_std": 0.01813822033909205
+    },
+    {
+      "class_name": "beta motoneuron",
+      "support": 10,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "cholinergic interneuron",
+      "support": 6,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "endothelial",
+      "support": 490,
+      "gnn_f1_mean": 0.05463191471588643,
+      "gnn_f1_std": 0.022746222902119244,
+      "mlp_f1_mean": 0.8500155092440231,
+      "mlp_f1_std": 0.0041656613119809985,
+      "lift_mean": -0.7953835945281367,
+      "lift_std": 0.021498241926519022
+    },
+    {
+      "class_name": "ependymal",
+      "support": 9,
+      "gnn_f1_mean": 0.15132505175983438,
+      "gnn_f1_std": 0.1097829413962679,
+      "mlp_f1_mean": 0.7489610389610389,
+      "mlp_f1_std": 0.03798874989348551,
+      "lift_mean": -0.5976359872012045,
+      "lift_std": 0.11542674207923939
+    },
+    {
+      "class_name": "gamma motoneuron",
+      "support": 63,
+      "gnn_f1_mean": 0.04222908274409959,
+      "gnn_f1_std": 0.05107401610060206,
+      "mlp_f1_mean": 0.61402815079457,
+      "mlp_f1_std": 0.021425653265401027,
+      "lift_mean": -0.5717990680504703,
+      "lift_std": 0.059591454427041335
+    },
+    {
+      "class_name": "meninges-1",
+      "support": 232,
+      "gnn_f1_mean": 0.0802626056737375,
+      "gnn_f1_std": 0.026207472713250475,
+      "mlp_f1_mean": 0.8824910007665417,
+      "mlp_f1_std": 0.007850880710201697,
+      "lift_mean": -0.8022283950928042,
+      "lift_std": 0.031497668937402974
+    },
+    {
+      "class_name": "meninges-2",
+      "support": 81,
+      "gnn_f1_mean": 0.07631459950373128,
+      "gnn_f1_std": 0.023310170012069545,
+      "mlp_f1_mean": 0.8187887271581124,
+      "mlp_f1_std": 0.013038171897674448,
+      "lift_mean": -0.7424741276543813,
+      "lift_std": 0.024343303203660238
+    },
+    {
+      "class_name": "meninges-3",
+      "support": 9,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.02,
+      "mlp_f1_std": 0.06324555320336758,
+      "lift_mean": -0.02,
+      "lift_std": 0.06324555320336758
+    },
+    {
+      "class_name": "microglia",
+      "support": 155,
+      "gnn_f1_mean": 0.005954096977602729,
+      "gnn_f1_std": 0.0070759961413221885,
+      "mlp_f1_mean": 0.8313029444059875,
+      "mlp_f1_std": 0.010623905882466042,
+      "lift_mean": -0.8253488474283849,
+      "lift_std": 0.011662685282840578
+    },
+    {
+      "class_name": "oligodendrocyte precursor cell",
+      "support": 188,
+      "gnn_f1_mean": 0.017361009494297783,
+      "gnn_f1_std": 0.016815895066408473,
+      "mlp_f1_mean": 0.7687449328897843,
+      "mlp_f1_std": 0.008930820584211935,
+      "lift_mean": -0.7513839233954867,
+      "lift_std": 0.018057779981353803
+    },
+    {
+      "class_name": "oligodendrocyte progenitor-1",
+      "support": 79,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.5336258488702784,
+      "mlp_f1_std": 0.042892269355344806,
+      "lift_mean": -0.5336258488702784,
+      "lift_std": 0.042892269355344806
+    },
+    {
+      "class_name": "oligodendrocyte progenitor-2",
+      "support": 1157,
+      "gnn_f1_mean": 0.11967366957865852,
+      "gnn_f1_std": 0.07362479916717468,
+      "mlp_f1_mean": 0.8484226743469561,
+      "mlp_f1_std": 0.001717191521007213,
+      "lift_mean": -0.7287490047682976,
+      "lift_std": 0.07267674255690776
+    },
+    {
+      "class_name": "oligodendrocyte-1",
+      "support": 198,
+      "gnn_f1_mean": 0.0073466123042567125,
+      "gnn_f1_std": 0.008969826906152473,
+      "mlp_f1_mean": 0.3266968148874651,
+      "mlp_f1_std": 0.01029797806212624,
+      "lift_mean": -0.3193502025832084,
+      "lift_std": 0.014276819179565834
+    },
+    {
+      "class_name": "oligodendrocyte-2",
+      "support": 956,
+      "gnn_f1_mean": 0.2021212008856089,
+      "gnn_f1_std": 0.018919305689572324,
+      "mlp_f1_mean": 0.920541827528219,
+      "mlp_f1_std": 0.0021145356713236653,
+      "lift_mean": -0.7184206266426101,
+      "lift_std": 0.01871477236977966
+    },
+    {
+      "class_name": "pericyte",
+      "support": 85,
+      "gnn_f1_mean": 0.00396576378345328,
+      "gnn_f1_std": 0.0068016281720021405,
+      "mlp_f1_mean": 0.607924651783708,
+      "mlp_f1_std": 0.018280152177585683,
+      "lift_mean": -0.6039588880002547,
+      "lift_std": 0.02090992321155242
+    },
+    {
+      "class_name": "peripheral glia",
+      "support": 42,
+      "gnn_f1_mean": 0.017165097924499623,
+      "gnn_f1_std": 0.019727287676691893,
+      "mlp_f1_mean": 0.2523241525928223,
+      "mlp_f1_std": 0.04223727437763149,
+      "lift_mean": -0.2351590546683227,
+      "lift_std": 0.05838899474374758
+    },
+    {
+      "class_name": "visceral motoneuron",
+      "support": 6,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    }
+  ],
+  "overall_lift": -0.48938945505537035
+}

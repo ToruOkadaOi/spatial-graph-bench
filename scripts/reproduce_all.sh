@@ -1,53 +1,37 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# Turnkey Reproduction Script for spatial-graph-bench
-# Verifies environment, tests, checksums, and regenerates all figures and tables.
-# ==============================================================================
-
+# Reconstruct and reanalyze immutable historical artifacts. Never trains models.
 set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-cd "${REPO_ROOT}"
-
-echo "========================================================================"
-echo " spatial-graph-bench: One-Click Benchmark Reproduction Pipeline"
-echo "========================================================================"
-
-# 1. Environment & Invariant Tests
-echo ">>> [1/5] Verifying environment dependencies..."
-uv sync --frozen --all-extras
-
-echo ">>> [2/5] Running pytest invariant test suite..."
-PYTHONPATH=src uv run pytest tests -q
-
-echo ">>> [3/5] Verifying cryptographic SHA-256 checksums of release assets..."
-cd dist
-for cs in sha256sums_*_results.txt; do
-    if [ -f "${cs}" ]; then
-        if command -v shasum &> /dev/null; then
-            shasum -a 256 -c "${cs}"
-        else
-            sha256sum -c "${cs}"
-        fi
-    fi
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OFFLINE=0
+FIGURES=1
+for arg in "$@"; do
+    case "$arg" in
+        --offline) OFFLINE=1 ;;
+        --no-figures) FIGURES=0 ;;
+        *) echo "Usage: $0 [--offline] [--no-figures]" >&2; exit 2 ;;
+    esac
 done
-cd "${REPO_ROOT}"
-
-# 4. Generate LaTeX Synthesis Table
-echo ">>> [4/5] Regenerating Quad-Modality Synthesis LaTeX Table..."
-PYTHONPATH=src uv run python scripts/export_latex_tables.py
-
-# 5. Regenerate Publication Figures
-echo ">>> [5/5] Regenerating publication-ready figures..."
-PYTHONPATH=src uv run python scripts/plotting/plot_cross_modality_benchmark.py
-PYTHONPATH=src uv run python scripts/plotting/plot_topological_controls.py --dataset xenium_mouse_kidney --split replicate_held_out_canonical --suffix _xenium
-PYTHONPATH=src uv run python scripts/plotting/plot_boundary_stratification.py --dataset xenium_mouse_kidney --split replicate_held_out_canonical --graph spatial_knn_k12 --title "10x Xenium (Mouse Kidney Replicate Split)" --suffix _xenium
-PYTHONPATH=src uv run python scripts/plotting/plot_kidney_interstitial_oversmoothing.py
-PYTHONPATH=src uv run python scripts/plotting/plot_tumor_stroma_over_smoothing.py
-
-echo "========================================================================"
-echo " SUCCESS: All benchmark deliverables, figures, and tables regenerated!"
-echo " Results Directory: results/reports/"
-echo " Figures Directory: results/figures/"
-echo "========================================================================"
+if [ "$OFFLINE" -eq 1 ]; then
+    uv sync --frozen --all-extras --offline
+    uv run --frozen python scripts/prepare_reanalysis_artifacts.py --offline
+else
+    uv sync --frozen --all-extras
+    uv run --frozen python scripts/prepare_reanalysis_artifacts.py
+fi
+uv run --frozen python scripts/reanalyze_results.py
+if [ "$FIGURES" -eq 1 ]; then
+    export MPLBACKEND=Agg
+    uv run --frozen python scripts/plotting/plot_cross_modality_benchmark.py
+    plot_dataset() {
+        uv run --frozen python scripts/plotting/plot_topological_controls.py --dataset "$1" --split "$2" --suffix "$3"
+        uv run --frozen python scripts/plotting/plot_boundary_stratification.py --dataset "$1" --split "$2" --graph spatial_knn_k12 --title "$4" --suffix "$3"
+    }
+    plot_dataset stereoseq_axolotl_telencephalon developmental_three_stage "" "Stereo-seq Stage57 (historical fits)"
+    plot_dataset merfish_mouse_spinal_cord mouse_held_out_canonical _merfish "MERFISH mouse F4 (historical fits)"
+    plot_dataset openst_human_lymph_node section_held_out_canonical _openst "Open-ST section 19 (historical fits)"
+    plot_dataset xenium_mouse_kidney replicate_held_out_canonical _xenium "Xenium ShamR (historical fits)"
+    uv run --frozen python scripts/plotting/plot_kidney_interstitial_oversmoothing.py
+    uv run --frozen python scripts/plotting/plot_tumor_stroma_over_smoothing.py
+fi
+echo "Historical prediction reanalysis complete: results/reports/reanalysis_v2/"
+echo "GNN training validity issues remain; see docs/reanalysis-v2.md."

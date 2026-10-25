@@ -193,8 +193,6 @@ def audit_run_dir(
     graphs_root: Path | None = None,
 ) -> RunAuditReport:
     """Full 4-layer audit of one run directory against canonical frozen artifacts."""
-    _ = split_definition
-    _ = graphs_root
     checks: list[AuditCheck] = []
 
     manifest_path = run_dir / "run_manifest.json"
@@ -228,6 +226,28 @@ def audit_run_dir(
 
     # Layer 3: Provenance hash-chain checks
     if manifest is not None and prep_bundle is not None:
+        from spatial_graph_bench.utils.hashing import hash_array
+
+        if hasattr(prep_bundle, "X_pca_train"):
+            for part in ("train", "val", "test"):
+                actual = hash_array(getattr(prep_bundle, f"X_pca_{part}"))
+                expected = getattr(prep_bundle.manifest, f"pca_{part}_hash")
+                # Historical dtype discrepancies require the verified byte index.
+                if actual != expected:
+                    from spatial_graph_bench.analysis.integrity import verify_legacy_bundle
+                    from spatial_graph_bench.utils.paths import ArtifactPaths
+
+                    try:
+                        d = ArtifactPaths.default().dataset_preprocessed_dir(
+                            manifest.dataset_name, manifest.split_id
+                        )
+                        verify_legacy_bundle(d)
+                        valid = actual == hash_array(np.load(d / f"X_pca_{part}.npy"))
+                    except (ValueError, OSError):
+                        valid = False
+                else:
+                    valid = True
+                checks.append(AuditCheck(name=f"pca_{part}_bytes", passed=valid))
         expected_feat_hash = prep_bundle.manifest.compute_manifest_hash()
         feat_match = manifest.feature_manifest_hash == expected_feat_hash
         checks.append(
@@ -251,8 +271,51 @@ def audit_run_dir(
                 )
             )
 
+    if manifest is not None and split_definition is not None:
+        checks.append(
+            AuditCheck(
+                name="frozen_split_hash",
+                passed=manifest.split_hash == split_definition.compute_artifact_hash(),
+            )
+        )
+    if manifest is not None and manifest.graph_artifact_hash and graphs_root is not None:
+        from spatial_graph_bench.graph.schema import GraphBundle
+
+        graph_ok = False
+        try:
+            for directory in sorted(graphs_root.iterdir()):
+                if not (directory / "graph_manifest.json").is_file():
+                    continue
+                graph = GraphBundle.load(directory)
+                if graph.manifest.compute_manifest_hash() == manifest.graph_artifact_hash:
+                    graph_ok = (
+                        graph.manifest.feature_manifest_hash == manifest.feature_manifest_hash
+                    )
+                    if prep_bundle is not None:
+                        ids = (
+                            prep_bundle.train_cell_ids
+                            + prep_bundle.val_cell_ids
+                            + prep_bundle.test_cell_ids
+                        )
+                        sections = (
+                            prep_bundle.section_ids_train
+                            + prep_bundle.section_ids_val
+                            + prep_bundle.section_ids_test
+                        )
+                        graph_ok = (
+                            graph_ok
+                            and graph.node_cell_ids == ids
+                            and graph.node_section_ids == sections
+                        )
+                    break
+        except (ValueError, OSError):
+            graph_ok = False
+        checks.append(AuditCheck(name="graph_parent_and_content", passed=graph_ok))
+
     # Layer 4: Independent semantic recomputation of metrics from frozen labels
     y_test = getattr(prep_bundle, "test_labels", None)
+    if y_test is not None and not preds_path.is_file():
+        checks.append(AuditCheck(name="preds_present", passed=False))
     if preds_path.is_file() and y_test is not None:
         try:
             y_pred = np.load(preds_path)
@@ -267,7 +330,14 @@ def audit_run_dir(
 
             if probs_path.is_file():
                 probs = np.load(probs_path)
-                sums_ok = bool(np.allclose(probs.sum(axis=1), 1.0, atol=1e-3))
+                sums_ok = bool(
+                    probs.ndim == 2
+                    and len(probs) == len(y_pred)
+                    and np.isfinite(probs).all()
+                    and np.all(probs >= 0)
+                    and np.all(probs <= 1)
+                    and np.allclose(probs.sum(axis=1), 1.0, atol=1e-3)
+                )
                 strict_argmax = bool(np.all(probs.argmax(axis=1) == y_pred))
                 if not strict_argmax and sums_ok and len(probs) == len(y_pred):
                     pred_probs = probs[np.arange(len(y_pred)), y_pred]

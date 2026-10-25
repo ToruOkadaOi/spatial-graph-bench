@@ -154,6 +154,31 @@ def run_feature_pipeline(
         for cid in split.test_cell_ids
     ]
 
+    # Hash exactly the dtype/bytes that PreprocessedBundle persists.
+    X_pca_train = np.ascontiguousarray(X_pca_train, dtype=np.float32)
+    X_pca_val = np.ascontiguousarray(X_pca_val, dtype=np.float32)
+    X_pca_test = np.ascontiguousarray(X_pca_test, dtype=np.float32)
+    content_hashes = {}
+    for part, x, coords, labels in (
+        ("train", X_pca_train, coords_train, y_train),
+        ("val", X_pca_val, coords_val, y_val),
+        ("test", X_pca_test, coords_test, y_test),
+    ):
+        content_hashes[f"X_pca_{part}"] = hash_array(x)
+        content_hashes[f"spatial_{part}"] = hash_array(
+            np.ascontiguousarray(coords, dtype=np.float32)
+        )
+        content_hashes[f"labels_{part}"] = hash_array(np.asarray(labels, dtype=np.int64))
+    content_hashes["cell_ids"] = hash_dict(
+        {
+            "train": split.train_cell_ids,
+            "val": split.val_cell_ids,
+            "test": split.test_cell_ids,
+            "sections_train": sec_train,
+            "sections_val": sec_val,
+            "sections_test": sec_test,
+        }
+    )
     manifest = FeatureManifest(
         dataset_name=split.dataset_name,
         split_id=split.split_id,
@@ -173,6 +198,7 @@ def run_feature_pipeline(
         spatial_coords_hash=hash_array(spatial_coords),
         label_mapping_hash=hash_dict(label_to_id),
         coordinate_shuffle_passed=True,
+        content_hashes=content_hashes,
     )
 
     return PreprocessedBundle(

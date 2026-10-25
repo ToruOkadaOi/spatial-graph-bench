@@ -1,0 +1,78 @@
+[
+  {
+    "dataset": "merfish_mouse_spinal_cord",
+    "split": "mouse_held_out_canonical",
+    "kind": "inputs",
+    "tag": "v0.1.0-merfish-inputs",
+    "filename": "artifacts_merfish_mouse_spinal_cord_mouse_held_out_canonical_inputs.tar.gz",
+    "sha256": "3f92e579fbc081cd17ea5d04d406f36c9dee1c20b06030584f3900abe8964e8b",
+    "prefix": "artifacts/preprocessed/merfish_mouse_spinal_cord/mouse_held_out_canonical/",
+    "additional_prefix": "artifacts/graphs/merfish_mouse_spinal_cord/mouse_held_out_canonical/"
+  },
+  {
+    "dataset": "merfish_mouse_spinal_cord",
+    "split": "mouse_held_out_canonical",
+    "kind": "results",
+    "tag": "v0.2.0-merfish-results",
+    "filename": "gpu_results_merfish_canonical.tar.gz",
+    "sha256": "6fbc4b85c720414d2a36467d665b7ff92c1775bbc034c22e2c7d508c6e6ae3db",
+    "prefix": "artifacts/results/merfish_mouse_spinal_cord/mouse_held_out_canonical/"
+  },
+  {
+    "dataset": "stereoseq_axolotl_telencephalon",
+    "split": "developmental_three_stage",
+    "kind": "inputs",
+    "tag": "v0.1.0-stereoseq-inputs",
+    "filename": "artifacts_stereoseq_axolotl_telencephalon_developmental_three_stage_inputs.tar.gz",
+    "sha256": "0635daf89ba885e1c4421933522a36cb40ae62bdaa2acdf668f104c72137ffd5",
+    "prefix": "artifacts/preprocessed/stereoseq_axolotl_telencephalon/developmental_three_stage/",
+    "additional_prefix": "artifacts/graphs/stereoseq_axolotl_telencephalon/developmental_three_stage/"
+  },
+  {
+    "dataset": "stereoseq_axolotl_telencephalon",
+    "split": "developmental_three_stage",
+    "kind": "results",
+    "tag": "v0.2.0-stereoseq-results",
+    "filename": "gpu_results_stereoseq_axolotl_telencephalon_developmental_three_stage.tar.gz",
+    "sha256": "a2e1802e1d9cccdb4f245eab72cfa56f9cf01dc02d2657e56f3535cd6f3b45e8",
+    "prefix": "artifacts/results/stereoseq_axolotl_telencephalon/developmental_three_stage/"
+  },
+  {
+    "dataset": "openst_human_lymph_node",
+    "split": "section_held_out_canonical",
+    "kind": "inputs",
+    "tag": "v0.1.0-openst-inputs",
+    "filename": "artifacts_openst_human_lymph_node_section_held_out_canonical_inputs.tar.gz",
+    "sha256": "83c8d2b416ce07cf3fff876fabd8695dbb8e5aa92b67fcfea55846f84779f115",
+    "prefix": "artifacts/preprocessed/openst_human_lymph_node/section_held_out_canonical/",
+    "additional_prefix": "artifacts/graphs/openst_human_lymph_node/section_held_out_canonical/"
+  },
+  {
+    "dataset": "openst_human_lymph_node",
+    "split": "section_held_out_canonical",
+    "kind": "results",
+    "tag": "v0.2.0-openst-results",
+    "filename": "gpu_results_openst_human_lymph_node_section_held_out_canonical.tar.gz",
+    "sha256": "6a633727a5f00806a114a36788b16fcc6598f66166b5ed1c53da3a05aa2fcf41",
+    "prefix": "artifacts/results/openst_human_lymph_node/section_held_out_canonical/"
+  },
+  {
+    "dataset": "xenium_mouse_kidney",
+    "split": "replicate_held_out_canonical",
+    "kind": "inputs",
+    "tag": "v0.1.0-xenium-inputs",
+    "filename": "artifacts_xenium_mouse_kidney_replicate_held_out_canonical_inputs.tar.gz",
+    "sha256": "42e4512e7cbe077721537f4175367d3f3b41194b6f7f01036cc9dfefc1d5a33e",
+    "prefix": "artifacts/preprocessed/xenium_mouse_kidney/replicate_held_out_canonical/",
+    "additional_prefix": "artifacts/graphs/xenium_mouse_kidney/replicate_held_out_canonical/"
+  },
+  {
+    "dataset": "xenium_mouse_kidney",
+    "split": "replicate_held_out_canonical",
+    "kind": "results",
+    "tag": "v0.2.0-xenium-results",
+    "filename": "gpu_results_xenium_mouse_kidney_replicate_held_out_canonical.tar.gz",
+    "sha256": "44c94734b8d5c3a8ef76a6ffebc6283aa82507ddde7da6ce7c0722d0615564b6",
+    "prefix": "artifacts/results/xenium_mouse_kidney/replicate_held_out_canonical/"
+  }
+]

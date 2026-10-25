@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from spatial_graph_bench.utils.hashing import hash_dict
+from spatial_graph_bench.utils.hashing import hash_array, hash_dict
 
 
 class FeatureManifest(BaseModel):
@@ -35,12 +35,18 @@ class FeatureManifest(BaseModel):
     spatial_coords_hash: str
     label_mapping_hash: str
     coordinate_shuffle_passed: bool = True
+    content_hashes: dict[str, str] | None = None
     created_at_utc: str = Field(
         default_factory=lambda: datetime.now(UTC).isoformat(),
     )
 
     def compute_manifest_hash(self) -> str:
-        return hash_dict(self.model_dump(mode="json"))
+        # Preserve historical parent identities when reading a v1 manifest.
+        return hash_dict(
+            self.model_dump(
+                mode="json", exclude={"content_hashes"} if self.content_hashes is None else set()
+            )
+        )
 
 
 class PreprocessedBundle:
@@ -139,7 +145,7 @@ class PreprocessedBundle:
         cell_ids_data = json.loads((d / "cell_ids.json").read_text(encoding="utf-8"))
         label_map = json.loads((d / "label_mapping.json").read_text(encoding="utf-8"))
 
-        return cls(
+        bundle = cls(
             X_pca_train=np.load(d / "X_pca_train.npy"),
             X_pca_val=np.load(d / "X_pca_val.npy"),
             X_pca_test=np.load(d / "X_pca_test.npy"),
@@ -158,3 +164,33 @@ class PreprocessedBundle:
             section_ids_val=cell_ids_data.get("sections_val"),
             section_ids_test=cell_ids_data.get("sections_test"),
         )
+        mismatches = []
+        for part in ("train", "val", "test"):
+            x = getattr(bundle, f"X_pca_{part}")
+            labels = getattr(bundle, f"{part}_labels")
+            ids = getattr(bundle, f"{part}_cell_ids")
+            if len(x) != len(labels) or len(ids) != len(x) or len(set(ids)) != len(ids):
+                raise ValueError(f"Misaligned or duplicate {part} cells")
+            if not np.isfinite(x).all() or x.shape[1] != manifest.num_features:
+                raise ValueError(f"Invalid {part} features")
+            if hash_array(x) != getattr(manifest, f"pca_{part}_hash"):
+                mismatches.append(part)
+        if hash_dict(label_map) != manifest.label_mapping_hash:
+            raise ValueError("Label mapping hash mismatch")
+        if manifest.content_hashes is not None:
+            actual = {}
+            for part in ("train", "val", "test"):
+                for prefix, attribute in (
+                    ("X_pca", f"X_pca_{part}"),
+                    ("spatial", f"spatial_{part}"),
+                    ("labels", f"{part}_labels"),
+                ):
+                    actual[f"{prefix}_{part}"] = hash_array(getattr(bundle, attribute))
+            actual["cell_ids"] = hash_dict(cell_ids_data)
+            if actual != manifest.content_hashes:
+                raise ValueError("Feature content hashes mismatch")
+        if mismatches or manifest.content_hashes is None:
+            from spatial_graph_bench.analysis.integrity import verify_legacy_bundle
+
+            verify_legacy_bundle(d)
+        return bundle

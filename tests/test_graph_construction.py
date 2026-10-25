@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
+import torch
 from scipy import sparse
 
 from spatial_graph_bench.config.graph import (
@@ -16,6 +18,7 @@ from spatial_graph_bench.config.split import SplitConfig, SplitHierarchy
 from spatial_graph_bench.graph.bipartite import BipartiteReferenceGraphBuilder
 from spatial_graph_bench.graph.coordinate_shuffle import build_coordinate_shuffled_graph
 from spatial_graph_bench.graph.rewired_control import build_rewired_control_graph
+from spatial_graph_bench.graph.schema import GraphBundle
 from spatial_graph_bench.graph.spatial_knn import SpatialkNNGraphBuilder
 from spatial_graph_bench.preprocessing.pipeline import run_feature_pipeline
 from spatial_graph_bench.splitting.generator import create_split_definition
@@ -54,7 +57,7 @@ def _make_dummy_bundle():
     )
 
 
-def test_spatial_knn_topological_invariants():
+def test_spatial_knn_topological_invariants(tmp_path):
     bundle = _make_dummy_bundle()
     builder = SpatialkNNGraphBuilder(SpatialkNNConfig(k=4))
     graph = builder.build(bundle, graph_name="spatial_knn_k4")
@@ -63,6 +66,13 @@ def test_spatial_knn_topological_invariants():
     assert graph.manifest.num_disallowed_cross_partition_edges == 0
     assert graph.manifest.num_disallowed_cross_section_edges == 0
     assert graph.edge_index.size(0) == 2
+    graph.save(tmp_path)
+    GraphBundle.load(tmp_path)
+    corrupt = graph.edge_index.clone()
+    corrupt[0, 0] = (corrupt[0, 0] + 1) % graph.num_nodes
+    torch.save(corrupt, tmp_path / "edge_index.pt")
+    with pytest.raises(ValueError, match="edge hash mismatch"):
+        GraphBundle.load(tmp_path)
 
     # Verify edge index within partition bounds
     src = graph.edge_index[0].numpy()

@@ -1,3 +1,5 @@
+> **2026-10-25 status:** Historical protocol/planning document. Use [prediction reanalysis v2](docs/reanalysis-v2.md) for corrected metric/statistical rules and outstanding training validity issues. This document is not evidence that every planned invariant was implemented.
+
 # HANDOFF_TO_GPU.md: GPU Training Session Handoff Ledger & Contract
 
 This document provides the exact, copy-pasteable execution contract for ephemeral GPU training sessions.

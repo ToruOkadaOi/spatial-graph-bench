@@ -1,3 +1,5 @@
+> **2026-10-25 status:** Historical protocol/planning document. Use [prediction reanalysis v2](docs/reanalysis-v2.md) for corrected metric/statistical rules and outstanding training validity issues. This document is not evidence that every planned invariant was implemented.
+
 # IMPLEMENTATION_STATUS.md: Phase Tracker & Test Coverage
 
 This document tracks execution progress, verification gate outcomes, and test coverage across all 9 phases and all 4 spatial transcriptomics platforms of `spatial-graph-bench`.

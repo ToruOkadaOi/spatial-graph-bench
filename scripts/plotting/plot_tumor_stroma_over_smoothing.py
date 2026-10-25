@@ -1,4 +1,4 @@
-"""Publication Figure 4: The Tumor-Stroma Boundary Dilution Mechanism in Open-ST.
+"""Publication Figure 4: The Open-ST prediction diagnostics Mechanism in Open-ST.
 
 Dissects the cellular and architectural mechanism behind isotropic GNN collapse:
 1. Panel A: Spatial layout of Section 19 showing malignant nests, stromal boundary tracks,
@@ -47,10 +47,12 @@ def plot_tumor_stroma_over_smoothing() -> None:
     with open(prep_dir / "label_mapping.json") as f:
         l2i = json.load(f)
 
+    corrected_dir = Path(f"results/reports/reanalysis_v2/{dataset_name}/{split_id}")
+
     # Load per-class lift summaries
-    with open(res_dir / "per_class_lift_gcn_spatial_knn_k6.json") as f:
+    with open(corrected_dir / "per_class_lift_gcn_spatial_knn_k6.json") as f:
         gcn_data = json.load(f)
-    with open(res_dir / "per_class_lift_graphsage_spatial_knn_k6.json") as f:
+    with open(corrected_dir / "per_class_lift_graphsage_spatial_knn_k6.json") as f:
         sage_data = json.load(f)
 
     # 3-Panel Figure
@@ -202,7 +204,6 @@ def plot_tumor_stroma_over_smoothing() -> None:
     )
 
     ax_bar.axvline(0, color="#333333", linestyle="-", linewidth=1.2, zorder=2)
-    ax_bar.axvspan(-0.0054, 0.0054, color="#999999", alpha=0.2, zorder=1, label="MLP Parity Band")
     ax_bar.set_title(
         "B. Per-Class Matched Lift (k=6 Spatial Graph)", fontsize=12, fontweight="bold", pad=10
     )
@@ -274,6 +275,13 @@ def plot_tumor_stroma_over_smoothing() -> None:
 
     out_pdf = OUT_DIR / "fig4_tumor_stroma_over_smoothing.pdf"
     out_png = OUT_DIR / "fig4_tumor_stroma_over_smoothing.png"
+    fig.text(
+        0.5,
+        -0.01,
+        "Historical fits; training validity issues remain (docs/reanalysis-v2.md)",
+        ha="center",
+        fontsize=8,
+    )
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()

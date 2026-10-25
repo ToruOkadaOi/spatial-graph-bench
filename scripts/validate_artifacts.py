@@ -1,110 +1,54 @@
-"""Validate all benchmark artifacts against cryptographic and topological invariants."""
-
-from __future__ import annotations
+"""Validate actual feature/graph bytes, frozen split and node ordering."""
 
 import argparse
-import sys
-from pathlib import Path
 
-# Add src to sys.path so the script can be run directly
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-
-from rich.console import Console
-from rich.table import Table
-
+from spatial_graph_bench.analysis.catalog import GRAPHS
+from spatial_graph_bench.analysis.integrity import INDEX, read_index, verify_paths
+from spatial_graph_bench.graph.audit import validate_graph_construction
 from spatial_graph_bench.graph.schema import GraphBundle
 from spatial_graph_bench.preprocessing.schema import PreprocessedBundle
 from spatial_graph_bench.splitting.schema import SplitDefinition
 from spatial_graph_bench.utils.paths import ArtifactPaths
 
-console = Console()
-
 
 def validate_all_artifacts(dataset_name: str, split_id: str) -> bool:
     paths = ArtifactPaths.default()
-    console.print(
-        f"[bold blue]Starting Artifact Validation for {dataset_name} ({split_id})...[/bold blue]\n"
-    )
-
-    all_passed = True
-    table = Table(title="Benchmark Artifact Integrity & Validation Status")
-    table.add_column("Category", style="cyan")
-    table.add_column("Name", style="magenta")
-    table.add_column("Details", style="yellow")
-    table.add_column("Status", style="green")
-
-    # 1. Split
-    split_file = paths.dataset_split_file(dataset_name, split_id)
-    if split_file.is_file():
-        try:
-            split = SplitDefinition.load_json(split_file)
-            table.add_row(
-                "Frozen Split",
-                f"{split_id}.json",
-                f"Train: {len(split.train_cell_ids)}, Val: {len(split.val_cell_ids)}, Test: {len(split.test_cell_ids)}",
-                "[bold green]PASSED[/bold green]",
-            )
-        except Exception as e:
-            table.add_row("Frozen Split", f"{split_id}.json", str(e), "[bold red]FAILED[/bold red]")
-            all_passed = False
-    else:
-        table.add_row(
-            "Frozen Split", f"{split_id}.json", "FILE MISSING", "[bold red]FAILED[/bold red]"
-        )
-        all_passed = False
-
-    # 2. Features
-    prep_dir = paths.dataset_preprocessed_dir(dataset_name, split_id)
-    if (prep_dir / "feature_manifest.json").is_file():
-        try:
-            bundle = PreprocessedBundle.load(prep_dir)
-            table.add_row(
-                "Feature Bundle",
-                "PCA Features",
-                f"Train: {bundle.X_pca_train.shape}, Val: {bundle.X_pca_val.shape}, Test: {bundle.X_pca_test.shape}",
-                "[bold green]PASSED[/bold green]",
-            )
-        except Exception as e:
-            table.add_row("Feature Bundle", "PCA Features", str(e), "[bold red]FAILED[/bold red]")
-            all_passed = False
-    else:
-        table.add_row(
-            "Feature Bundle", "PCA Features", "DIR MISSING", "[bold red]FAILED[/bold red]"
-        )
-        all_passed = False
-
-    # 3. Graphs
-    graph_base = paths.graphs_dir / dataset_name / split_id
-    if graph_base.is_dir():
-        graphs = sorted(
-            [
-                d
-                for d in graph_base.iterdir()
-                if d.is_dir() and (d / "graph_manifest.json").is_file()
-            ]
-        )
-        for g_dir in graphs:
-            try:
-                g_bundle = GraphBundle.load(g_dir)
-                table.add_row(
-                    "Graph Bundle",
-                    g_dir.name,
-                    f"Nodes: {g_bundle.num_nodes}, Edges: {g_bundle.edge_index.size(1)}, Variant: {g_bundle.manifest.protocol_variant}",
-                    "[bold green]PASSED[/bold green]",
-                )
-            except Exception as e:
-                table.add_row("Graph Bundle", g_dir.name, str(e), "[bold red]FAILED[/bold red]")
-                all_passed = False
-
-    console.print(table)
-    return all_passed
+    try:
+        split_file = paths.dataset_split_file(dataset_name, split_id)
+        split = SplitDefinition.load_json(split_file)
+        prep = paths.dataset_preprocessed_dir(dataset_name, split_id)
+        bundle = PreprocessedBundle.load(prep)
+        if bundle.manifest.split_config_hash != split.compute_artifact_hash():
+            raise ValueError("Feature/split parent hash mismatch")
+        for part in ("train", "val", "test"):
+            if getattr(bundle, f"{part}_cell_ids") != getattr(split, f"{part}_cell_ids"):
+                raise ValueError(f"Feature/split cell ordering mismatch: {part}")
+        files = [split_file, *(p for p in prep.iterdir() if p.is_file())]
+        graph_root = paths.graphs_dir / dataset_name / split_id
+        for name in GRAPHS:
+            directory = graph_root / name
+            graph = GraphBundle.load(directory)
+            ids = bundle.train_cell_ids + bundle.val_cell_ids + bundle.test_cell_ids
+            sections = bundle.section_ids_train + bundle.section_ids_val + bundle.section_ids_test
+            if graph.node_cell_ids != ids or graph.node_section_ids != sections:
+                raise ValueError(f"Graph node/section ordering mismatch: {name}")
+            if graph.manifest.feature_manifest_hash != bundle.manifest.compute_manifest_hash():
+                raise ValueError(f"Graph/feature parent mismatch: {name}")
+            if not validate_graph_construction(directory, verbose=False):
+                raise ValueError(f"Graph topology invalid: {name}")
+            files.extend(p for p in directory.iterdir() if p.is_file())
+        if (paths.root_dir / INDEX).is_file():
+            verify_paths(paths.root_dir, read_index(paths.root_dir), files)
+        print(f"PASS: {dataset_name}/{split_id} actual bytes, parents, order and topology")
+        return True
+    except (ValueError, OSError, KeyError) as error:
+        print(f"FAIL: {dataset_name}/{split_id}: {error}")
+        return False
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--split", type=str, required=True)
+    parser.add_argument("--dataset", required=True)
+    parser.add_argument("--split", required=True)
     args = parser.parse_args()
-
-    ok = validate_all_artifacts(args.dataset, args.split)
-    sys.exit(0 if ok else 1)
+    raise SystemExit(0 if validate_all_artifacts(args.dataset, args.split) else 1)

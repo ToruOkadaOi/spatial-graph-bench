@@ -97,28 +97,28 @@ def plot_cross_modality_matrix() -> None:
         (
             axes[0, 0],
             df_gnn_m,
-            "A. MERFISH: Adult Spinal Cord (Heterophilic Parity)",
+            "A. MERFISH: Mouse F4 (historical fits)",
             mlp_m_mean,
             mlp_m_std,
         ),
         (
             axes[0, 1],
             df_gnn_s,
-            "B. Stereo-seq: Axolotl Telencephalon (+6.4% Lift)",
+            "B. Stereo-seq: Stage57 (historical fits)",
             mlp_s_mean,
             mlp_s_std,
         ),
         (
             axes[1, 0],
             df_gnn_o,
-            "C. Open-ST: Human Lymph Node (Tumor Over-smoothing)",
+            "C. Open-ST: Section 19 (historical fits)",
             mlp_o_mean,
             mlp_o_std,
         ),
         (
             axes[1, 1],
             df_gnn_x,
-            "D. 10x Xenium: Mouse Kidney (Inter-Tubular Over-smoothing)",
+            "D. Xenium: ShamR (historical fits)",
             mlp_x_mean,
             mlp_x_std,
         ),
@@ -143,6 +143,7 @@ def plot_cross_modality_matrix() -> None:
 
         # Plot grouped barplot with error bars
         sns.barplot(
+            errorbar="sd",
             data=df_curr,
             x="Topology_Clean",
             y="test_macro_f1",
@@ -171,6 +172,13 @@ def plot_cross_modality_matrix() -> None:
 
     out_pdf = OUT_DIR / "fig1_cross_modality_benchmark.pdf"
     out_png = OUT_DIR / "fig1_cross_modality_benchmark.png"
+    fig.text(
+        0.5,
+        -0.01,
+        "Bars: mean ± sample SD across seeds. Historical fits; training validity issues remain (docs/reanalysis-v2.md)",
+        ha="center",
+        fontsize=8,
+    )
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()

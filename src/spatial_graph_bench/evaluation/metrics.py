@@ -28,11 +28,12 @@ def compute_partition_metrics(
     is_boundary: np.ndarray | None = None,
 ) -> EvaluationSummary:
     """Compute evaluation metrics enforcing §3.4 label-space intersection."""
+    if y_true.shape != y_pred.shape or y_true.ndim != 1:
+        raise ValueError("Labels and predictions must be aligned one-dimensional arrays")
     id_to_label = {v: k for k, v in label_to_id.items()}
-    all_label_names = [id_to_label[i] for i in range(len(id_to_label))]
 
     if evaluated_labels is not None:
-        eval_ids = [label_to_id[lab] for lab in evaluated_labels if lab in label_to_id]
+        eval_ids = [label_to_id[lab] for lab in evaluated_labels]
         excl_labels = list(excluded_labels or [])
     else:
         # If not specified, default to unique labels in y_true
@@ -40,7 +41,8 @@ def compute_partition_metrics(
         excl_labels = []
 
     eval_label_names = [id_to_label[i] for i in eval_ids]
-    coverage = len(eval_label_names) / max(len(all_label_names), 1)
+    present_ids = set(y_true[y_true >= 0].tolist())
+    coverage = len(set(eval_ids) & present_ids) / max(len(present_ids), 1)
 
     # Invariant §3.4: Filter out cells belonging to excluded classes
     mask = np.isin(y_true, eval_ids)

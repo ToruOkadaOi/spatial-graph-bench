@@ -4,10 +4,10 @@ PYTHON ?= python3
 UV ?= uv
 
 install:
-	$(UV) pip install -e .
+	$(UV) sync --frozen
 
 install-dev:
-	$(UV) pip install -e ".[dev]"
+	$(UV) sync --frozen --all-extras
 
 lint:
 	$(UV) run ruff check src tests scripts

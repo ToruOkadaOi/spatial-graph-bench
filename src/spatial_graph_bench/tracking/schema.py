@@ -58,6 +58,7 @@ class RunManifest(BaseModel):
     status: RunStatus = RunStatus.SUCCESS
     model_name: str
     model_config_hash: str
+    source_fingerprint: str | None = None
     dataset_name: str
     dataset_version: str = "2026-09-04"
     split_id: str
@@ -86,7 +87,13 @@ class RunManifest(BaseModel):
 
     def compute_manifest_hash(self) -> str:
         """Compute SHA-256 hash of run manifest."""
-        return hash_dict(self.model_dump(mode="json"))
+        # Adding optional provenance must not change the identities of v1 runs.
+        return hash_dict(
+            self.model_dump(
+                mode="json",
+                exclude={"source_fingerprint"} if self.source_fingerprint is None else set(),
+            )
+        )
 
 
 class MetricRecord(BaseModel):

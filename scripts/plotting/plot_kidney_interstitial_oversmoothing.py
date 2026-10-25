@@ -46,10 +46,12 @@ def plot_kidney_interstitial_oversmoothing() -> None:
     with open(prep_dir / "label_mapping.json") as f:
         l2i = json.load(f)
 
+    corrected_dir = Path(f"results/reports/reanalysis_v2/{dataset_name}/{split_id}")
+
     # Load per-class lift summaries
-    with open(res_dir / "per_class_lift_gcn_spatial_knn_k12.json") as f:
+    with open(corrected_dir / "per_class_lift_gcn_spatial_knn_k12.json") as f:
         gcn_data = json.load(f)
-    with open(res_dir / "per_class_lift_graphsage_spatial_knn_k12.json") as f:
+    with open(corrected_dir / "per_class_lift_graphsage_spatial_knn_k12.json") as f:
         sage_data = json.load(f)
 
     # 3-Panel Figure
@@ -158,8 +160,6 @@ def plot_kidney_interstitial_oversmoothing() -> None:
         linewidth=0.6,
     )
 
-    eps = 0.0241
-    ax1.axhspan(-eps, eps, color="#999999", alpha=0.2, label=f"Parity Margin (±{eps:.3f})")
     ax1.axhline(0, color="#444444", linestyle="--", linewidth=1.2)
 
     ax1.set_title("B. Per-Class Matched Lift (Spatial k=12 vs. MLP)", fontweight="bold", pad=12)
@@ -212,7 +212,7 @@ def plot_kidney_interstitial_oversmoothing() -> None:
         linecolor="#dddddd",
     )
 
-    ax2.set_title("C. Interstitial False Assimilation into Tubules", fontweight="bold", pad=12)
+    ax2.set_title("C. Prediction-frequency changes (GCN minus MLP)", fontweight="bold", pad=12)
     ax2.set_xlabel("Falsely Predicted Tubular Epithelium", fontweight="bold")
     ax2.set_ylabel("True Interstitial / Glomerular Identity", fontweight="bold")
 
@@ -220,6 +220,13 @@ def plot_kidney_interstitial_oversmoothing() -> None:
 
     out_pdf = OUT_DIR / "fig4_kidney_interstitial_oversmoothing.pdf"
     out_png = OUT_DIR / "fig4_kidney_interstitial_oversmoothing.png"
+    fig.text(
+        0.5,
+        -0.01,
+        "Historical fits; training validity issues remain (docs/reanalysis-v2.md)",
+        ha="center",
+        fontsize=8,
+    )
     plt.savefig(out_pdf, bbox_inches="tight")
     plt.savefig(out_png, dpi=300, bbox_inches="tight")
     plt.close()

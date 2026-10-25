@@ -19,6 +19,7 @@ from spatial_graph_bench.models.gnn import BenchmarkGNN
 from spatial_graph_bench.models.mlp import MLP
 from spatial_graph_bench.models.random_forest import RandomForestBaseline
 from spatial_graph_bench.preprocessing.schema import PreprocessedBundle
+from spatial_graph_bench.tracking.cache import source_fingerprint
 from spatial_graph_bench.tracking.schema import RunManifest, RunStatus
 from spatial_graph_bench.utils.hashing import hash_dict
 from spatial_graph_bench.utils.logging import get_logger
@@ -36,6 +37,9 @@ def run_benchmark_training(
 ) -> tuple[RunManifest, dict[str, Any]]:
     """Execute training for a single configured model run adhering to GPU run contract."""
     start_time = time.time()
+    run_id = f"{config.model_type.value}_{config.graph_name}_seed{config.training.seed}"
+    if out_dir is not None and (Path(out_dir) / run_id).exists():
+        raise FileExistsError(f"Refusing to overwrite existing run: {Path(out_dir) / run_id}")
     set_seed(config.training.seed)
 
     device = torch.device(
@@ -320,6 +324,8 @@ def run_benchmark_training(
         status=RunStatus.SUCCESS,
         model_name=config.model_type.value,
         model_config_hash=config.compute_config_hash(),
+        source_fingerprint=source_fingerprint(),
+        selected_params=config.model_dump(mode="json"),
         dataset_name=config.dataset_name,
         dataset_version=feature_bundle.manifest.created_at_utc[:10],
         split_id=config.split_id,
@@ -357,6 +363,9 @@ def run_benchmark_training(
     if out_dir is not None:
         p = Path(out_dir) / run_id
         p.mkdir(parents=True, exist_ok=True)
+        (p / "resolved_config.json").write_text(config.model_dump_json(indent=2), encoding="utf-8")
+        if config.model_type != ModelType.RANDOM_FOREST:
+            torch.save(model.state_dict(), p / "model_weights.pt")
 
         (p / "run_manifest.json").write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
         (p / "metrics_summary.json").write_text(json.dumps(summaries, indent=2), encoding="utf-8")

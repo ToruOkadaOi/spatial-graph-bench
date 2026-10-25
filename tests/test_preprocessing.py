@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 from scipy import sparse
 
 from spatial_graph_bench.config.preprocessing import (
@@ -13,10 +14,11 @@ from spatial_graph_bench.config.preprocessing import (
 from spatial_graph_bench.config.split import SplitConfig, SplitHierarchy
 from spatial_graph_bench.preprocessing.audit import verify_spatial_ignorance
 from spatial_graph_bench.preprocessing.pipeline import run_feature_pipeline
+from spatial_graph_bench.preprocessing.schema import PreprocessedBundle
 from spatial_graph_bench.splitting.generator import create_split_definition
 
 
-def test_preprocessing_and_spatial_ignorance_audit():
+def test_preprocessing_and_spatial_ignorance_audit(tmp_path):
     n_cells = 30
     n_genes = 20
     rng = np.random.default_rng(42)
@@ -61,6 +63,14 @@ def test_preprocessing_and_spatial_ignorance_audit():
     assert bundle.X_pca_val.shape == (7, 5)
     assert bundle.X_pca_test.shape == (8, 5)
     assert bundle.spatial_train.shape == (15, 2)
+    bundle.save(tmp_path)
+    loaded = PreprocessedBundle.load(tmp_path)
+    np.testing.assert_array_equal(loaded.X_pca_train, bundle.X_pca_train)
+    corrupted = loaded.X_pca_train.copy()
+    corrupted[0, 0] += 1
+    np.save(tmp_path / "X_pca_train.npy", corrupted)
+    with pytest.raises(ValueError, match="hashes mismatch"):
+        PreprocessedBundle.load(tmp_path)
 
     # Mandatory coordinate-shuffle test
     audit_passed = verify_spatial_ignorance(

@@ -452,7 +452,7 @@ def fetch_results_release(
         console.print("[yellow]Warning: No sha256sums file found in release assets.[/yellow]")
         return False
 
-    all_ok = any(verify_local_assets(cs) for cs in checksum_files)
+    all_ok = all(verify_local_assets(cs) for cs in checksum_files)
     if not all_ok:
         console.print("[bold red]Aborting: Cryptographic checksum mismatch detected![/bold red]")
         return False
@@ -475,7 +475,7 @@ def verify_local_assets(checksum_file: Path) -> bool:
 
     parent_dir = checksum_file.parent
     lines = checksum_file.read_text(encoding="utf-8").strip().splitlines()
-    all_ok = True
+    all_ok = bool(lines)
 
     table = Table(title=f"Local Checksum Verification: {checksum_file.name}")
     table.add_column("File", style="cyan")
@@ -488,7 +488,7 @@ def verify_local_assets(checksum_file: Path) -> bool:
         if len(parts) != 2:
             continue
         expected_hash, fname = parts
-        target_f = parent_dir / fname.strip()
+        target_f = parent_dir / fname.strip().lstrip("*")
         if not target_f.is_file():
             table.add_row(fname.strip(), "[bold red]FILE MISSING[/bold red]")
             all_ok = False

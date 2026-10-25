@@ -1,0 +1,145 @@
+{
+  "classes": [
+    {
+      "class_name": "CAF",
+      "support": 1805,
+      "gnn_f1_mean": 0.021044064185206206,
+      "gnn_f1_std": 0.03470467359303597,
+      "mlp_f1_mean": 0.5889845196839124,
+      "mlp_f1_std": 0.004568793987216706,
+      "lift_mean": -0.5679404554987062,
+      "lift_std": 0.036091856214952846
+    },
+    {
+      "class_name": "CAM",
+      "support": 349,
+      "gnn_f1_mean": 0.004105264769147657,
+      "gnn_f1_std": 0.007980488101477579,
+      "mlp_f1_mean": 0.4817153443173887,
+      "mlp_f1_std": 0.015177289799424891,
+      "lift_mean": -0.47761007954824103,
+      "lift_std": 0.018920752481233365
+    },
+    {
+      "class_name": "Cortex_CCL21",
+      "support": 17,
+      "gnn_f1_mean": 0.0004028197381671702,
+      "gnn_f1_std": 0.0012738278590809181,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0004028197381671702,
+      "lift_std": 0.0012738278590809181
+    },
+    {
+      "class_name": "Cytotoxic_IFN_signaling",
+      "support": 21,
+      "gnn_f1_mean": 0.0,
+      "gnn_f1_std": 0.0,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.0,
+      "lift_std": 0.0
+    },
+    {
+      "class_name": "Fibroblasts",
+      "support": 807,
+      "gnn_f1_mean": 0.004616869502363311,
+      "gnn_f1_std": 0.009209135559735324,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.004616869502363311,
+      "lift_std": 0.009209135559735324
+    },
+    {
+      "class_name": "Germinal_Center_Plasma_IgM_B_cell",
+      "support": 3597,
+      "gnn_f1_mean": 0.12119820517788375,
+      "gnn_f1_std": 0.10006759093743467,
+      "mlp_f1_mean": 0.7142512379528237,
+      "mlp_f1_std": 0.0016799884209235557,
+      "lift_mean": -0.5930530327749398,
+      "lift_std": 0.09998105569852792
+    },
+    {
+      "class_name": "High_Endothelial_Venules",
+      "support": 2076,
+      "gnn_f1_mean": 0.04116844593382402,
+      "gnn_f1_std": 0.049535007997161366,
+      "mlp_f1_mean": 0.27177759529650664,
+      "mlp_f1_std": 0.006544069368594264,
+      "lift_mean": -0.2306091493626826,
+      "lift_std": 0.052208612846732026
+    },
+    {
+      "class_name": "M1_macrophages",
+      "support": 4499,
+      "gnn_f1_mean": 0.08160973815436497,
+      "gnn_f1_std": 0.0843289269708829,
+      "mlp_f1_mean": 0.49454304052562936,
+      "mlp_f1_std": 0.0029293674251045392,
+      "lift_mean": -0.41293330237126435,
+      "lift_std": 0.08580606986375881
+    },
+    {
+      "class_name": "Macrophages",
+      "support": 42,
+      "gnn_f1_mean": 0.00021130480718436345,
+      "gnn_f1_std": 0.0006682044712452993,
+      "mlp_f1_mean": 0.0,
+      "mlp_f1_std": 0.0,
+      "lift_mean": 0.00021130480718436345,
+      "lift_std": 0.0006682044712452993
+    },
+    {
+      "class_name": "Plasma_IgA",
+      "support": 878,
+      "gnn_f1_mean": 0.0038446770475542716,
+      "gnn_f1_std": 0.009317153665306607,
+      "mlp_f1_mean": 0.15993485609144215,
+      "mlp_f1_std": 0.015533486644429327,
+      "lift_mean": -0.15609017904388792,
+      "lift_std": 0.018296360673062572
+    },
+    {
+      "class_name": "Plasma_IgG",
+      "support": 7947,
+      "gnn_f1_mean": 0.1748565805713547,
+      "gnn_f1_std": 0.1403813041358471,
+      "mlp_f1_mean": 0.7945432719002158,
+      "mlp_f1_std": 0.001633268768494414,
+      "lift_mean": -0.6196866913288611,
+      "lift_std": 0.14071520773060528
+    },
+    {
+      "class_name": "T_cell",
+      "support": 2549,
+      "gnn_f1_mean": 0.08601246068604919,
+      "gnn_f1_std": 0.061567340787955,
+      "mlp_f1_mean": 0.4862116339872989,
+      "mlp_f1_std": 0.005183088584902237,
+      "lift_mean": -0.40019917330124966,
+      "lift_std": 0.06290845539001969
+    },
+    {
+      "class_name": "Tumor",
+      "support": 9107,
+      "gnn_f1_mean": 0.2131540592099539,
+      "gnn_f1_std": 0.22837940033914436,
+      "mlp_f1_mean": 0.932841449987609,
+      "mlp_f1_std": 0.0004217874459342316,
+      "lift_mean": -0.719687390777655,
+      "lift_std": 0.22814408538159486
+    },
+    {
+      "class_name": "Tumor_Keratin_Pearl",
+      "support": 378,
+      "gnn_f1_mean": 0.011096856694056445,
+      "gnn_f1_std": 0.02030194198227923,
+      "mlp_f1_mean": 0.5990050497309831,
+      "mlp_f1_std": 0.017022217048163132,
+      "lift_mean": -0.5879081930369265,
+      "lift_std": 0.021261753989786893
+    }
+  ],
+  "overall_lift": -0.3400347609283357
+}

@@ -17,9 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
-COPY pyproject.toml README.md ./
-RUN uv pip install --system -e ".[dev]"
-
 COPY . .
+RUN uv sync --frozen --all-extras
 
-CMD ["pytest", "-v", "tests"]
+CMD ["uv", "run", "--frozen", "pytest", "-v", "tests"]

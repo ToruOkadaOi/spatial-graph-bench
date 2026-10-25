@@ -26,6 +26,7 @@ from spatial_graph_bench.config.model import (
 from spatial_graph_bench.graph.schema import GraphBundle
 from spatial_graph_bench.models.trainer import run_benchmark_training
 from spatial_graph_bench.preprocessing.schema import PreprocessedBundle
+from spatial_graph_bench.tracking.cache import require_compatible_cache
 from spatial_graph_bench.tracking.graph_lift import compute_matched_graph_lift
 from spatial_graph_bench.tracking.schema import RunManifest
 from spatial_graph_bench.utils.logging import get_logger
@@ -112,6 +113,26 @@ def run_gnn_sweep(
                 mlp_test_f1 = mlp_metrics["test"]["macro_f1"]
                 mlp_test_bacc = mlp_metrics["test"]["balanced_accuracy"]
 
+                gnn_cfg = BenchmarkRunConfig(
+                    model_type=model_type,
+                    dataset_name=dataset_name,
+                    split_id=split_id,
+                    graph_name=g_name,
+                    gnn_config=GNNConfig(
+                        hidden_dim=128,
+                        num_layers=2,
+                        dropout=0.2,
+                    ),
+                    training=TrainingConfig(
+                        max_epochs=max_epochs,
+                        learning_rate=lr,
+                        weight_decay=weight_decay,
+                        patience=patience,
+                        seed=seed,
+                        device=device,
+                    ),
+                )
+
                 # Check if run already completed and passed audit
                 run_id = f"{m_str.lower()}_{g_name}_seed{seed}"
                 run_dir = results_dir / run_id
@@ -119,6 +140,8 @@ def run_gnn_sweep(
                 gnn_metrics_file = run_dir / "metrics_summary.json"
 
                 if gnn_manifest_file.is_file() and gnn_metrics_file.is_file():
+                    cached = RunManifest.model_validate_json(gnn_manifest_file.read_text())
+                    require_compatible_cache(cached, gnn_cfg, feature_bundle, graph_bundle, run_dir)
                     audit_rep = audit_run_dir(
                         run_dir,
                         prep_bundle=feature_bundle,
@@ -169,26 +192,6 @@ def run_gnn_sweep(
                             f"Lift = [bold]{lift_str}[/bold] [green](CACHED PASS)[/green]"
                         )
                         continue
-
-                gnn_cfg = BenchmarkRunConfig(
-                    model_type=model_type,
-                    dataset_name=dataset_name,
-                    split_id=split_id,
-                    graph_name=g_name,
-                    gnn_config=GNNConfig(
-                        hidden_dim=128,
-                        num_layers=2,
-                        dropout=0.2,
-                    ),
-                    training=TrainingConfig(
-                        max_epochs=max_epochs,
-                        learning_rate=lr,
-                        weight_decay=weight_decay,
-                        patience=patience,
-                        seed=seed,
-                        device=device,
-                    ),
-                )
 
                 gnn_manifest, gnn_summaries = run_benchmark_training(
                     gnn_cfg,
