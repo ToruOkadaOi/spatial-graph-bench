@@ -79,7 +79,8 @@ def run_benchmark_training(
         raise RuntimeError("CUDA requested but unavailable; refusing silent CPU fallback")
     set_seed(config.training.seed)
     if device.type == "cuda":
-        torch.cuda.reset_peak_memory_stats(device)
+        torch.cuda.set_device(device)
+        torch.cuda.reset_peak_memory_stats()
     bundle = feature_bundle
     identity = training_identity(config, bundle, graph_bundle)
     env = environment(device)
