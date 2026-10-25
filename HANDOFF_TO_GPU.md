@@ -1,4 +1,4 @@
-> **2026-10-25 status:** Historical protocol/planning document. Use [prediction reanalysis v2](docs/reanalysis-v2.md) for corrected metric/statistical rules and outstanding training validity issues. This document is not evidence that every planned invariant was implemented.
+> **2026-10-25 status:** Historical protocol/planning document. Use [the corrected retraining handoff](docs/RETRAINING.md) for the new branch's executable CPU/Vast workflow. Use [prediction reanalysis v2](docs/reanalysis-v2.md) for the earlier metric/statistical corrections. This document is not evidence that every planned invariant was implemented.
 
 # HANDOFF_TO_GPU.md: GPU Training Session Handoff Ledger & Contract
 

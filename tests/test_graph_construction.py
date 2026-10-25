@@ -127,3 +127,35 @@ def test_bipartite_variant_a():
     assert bipartite_graph.manifest.num_val_val_edges == 0
     assert bipartite_graph.manifest.num_test_test_edges == 0
     assert bipartite_graph.manifest.num_train_train_edges > 0
+
+
+def test_undirected_rewiring_preserves_both_degrees_and_reciprocity():
+    bundle = _make_dummy_bundle()
+    graph = SpatialkNNGraphBuilder(SpatialkNNConfig(k=4)).build(bundle, "base")
+    rewired = build_rewired_control_graph(graph, RewiredControlConfig(seed=42), "rewired")
+    arcs = set(map(tuple, rewired.edge_index.numpy().T.tolist()))
+    assert all(u != v and (v, u) in arcs for u, v in arcs)
+    for axis in (0, 1):
+        np.testing.assert_array_equal(
+            np.bincount(graph.edge_index[axis], minlength=graph.num_nodes),
+            np.bincount(rewired.edge_index[axis], minlength=graph.num_nodes),
+        )
+    assert not torch.equal(graph.edge_index, rewired.edge_index)
+
+
+def test_coordinate_shuffle_keeps_each_sections_coordinate_multiset(monkeypatch):
+    bundle = _make_dummy_bundle()
+    bundle.section_ids_train = ["one"] * 10 + ["two"] * 10
+    captured = {}
+    original = SpatialkNNGraphBuilder.build
+
+    def capture(self, bundle, graph_name, extra_metadata=None):
+        captured["coords"] = bundle.spatial_train.copy()
+        return original(self, bundle, graph_name, extra_metadata)
+
+    monkeypatch.setattr(SpatialkNNGraphBuilder, "build", capture)
+    build_coordinate_shuffled_graph(bundle, CoordinateShuffleConfig(seed=42), "shuffled", 4)
+    for start, end in [(0, 10), (10, 20)]:
+        assert sorted(map(tuple, captured["coords"][start:end])) == sorted(
+            map(tuple, bundle.spatial_train[start:end])
+        )

@@ -19,14 +19,22 @@ def build_coordinate_shuffled_graph(
     graph_name: str,
     k: int = 6,
 ) -> GraphBundle:
-    """Construct spatial k-NN graph on permuted physical coordinates within each partition."""
+    """Construct spatial k-NN graph on permuted physical coordinates within each partition and physical section."""
     logger.info("Building coordinate-shuffled graph (seed=%d)...", config.seed)
 
     rng = np.random.default_rng(config.seed)
 
-    shuffled_sp_train = rng.permutation(bundle.spatial_train)
-    shuffled_sp_val = rng.permutation(bundle.spatial_val)
-    shuffled_sp_test = rng.permutation(bundle.spatial_test)
+    def shuffle_sections(coords, sections):
+        shuffled = coords.copy()
+        sections = np.asarray(sections)
+        for section in np.unique(sections):
+            indices = np.flatnonzero(sections == section)
+            shuffled[indices] = coords[rng.permutation(indices)]
+        return shuffled
+
+    shuffled_sp_train = shuffle_sections(bundle.spatial_train, bundle.section_ids_train)
+    shuffled_sp_val = shuffle_sections(bundle.spatial_val, bundle.section_ids_val)
+    shuffled_sp_test = shuffle_sections(bundle.spatial_test, bundle.section_ids_test)
 
     shuffled_bundle = PreprocessedBundle(
         X_pca_train=bundle.X_pca_train,

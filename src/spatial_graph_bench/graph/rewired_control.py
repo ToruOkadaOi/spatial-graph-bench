@@ -24,55 +24,47 @@ def build_rewired_control_graph(
     rng = random.Random(config.seed)
     edge_index = base_bundle.edge_index.clone().cpu().numpy()
 
-    if edge_index.shape[1] == 0:
-        return base_bundle
-
-    # Map edges to list of (u, v)
-    edges = list(zip(edge_index[0], edge_index[1], strict=True))
-    edge_set = set(edges)
-    m = len(edges)
-    n_swaps = int(m * config.n_swaps_factor)
-
-    logger.info("Rewiring %d edges with %d attempted swaps (seed=%d)...", m, n_swaps, config.seed)
-
-    # Invariant: rewiring must preserve partition and section disjointness
+    if base_bundle.manifest.weighting != "unweighted":
+        raise ValueError("Undirected rewiring requires an unweighted reference graph")
+    arcs = set(zip(edge_index[0].tolist(), edge_index[1].tolist(), strict=True))
+    if any(u == v or (v, u) not in arcs for u, v in arcs):
+        raise ValueError("Reference must be symmetric and have no self edges")
     sections = base_bundle.node_section_ids
     partitions = np.zeros(base_bundle.num_nodes, dtype=np.int32)
     partitions[base_bundle.val_mask.numpy()] = 1
     partitions[base_bundle.test_mask.numpy()] = 2
-
+    groups = {}
+    for u, v in sorted(arcs):
+        if partitions[u] != partitions[v] or sections[u] != sections[v]:
+            raise ValueError("Reference crosses partition/section boundaries")
+        if u < v:
+            groups.setdefault((int(partitions[u]), sections[u]), []).append((u, v))
+    rewired = set()
     successful_swaps = 0
-    for _ in range(n_swaps):
-        i = rng.randrange(m)
-        j = rng.randrange(m)
-        if i == j:
-            continue
-
-        u, v = edges[i]
-        x, y = edges[j]
-
-        # Invariant: can only swap if both edges belong to the same partition and section!
-        if partitions[u] != partitions[x] or sections[u] != sections[x]:
-            continue
-
-        # Propose (u, y) and (x, v)
-        if u == y or x == v:
-            continue
-        if (u, y) in edge_set or (x, v) in edge_set:
-            continue
-
-        edge_set.remove((u, v))
-        edge_set.remove((x, y))
-        edge_set.add((u, y))
-        edge_set.add((x, v))
-        edges[i] = (u, y)
-        edges[j] = (x, v)
-        successful_swaps += 1
-
-    logger.info("Rewiring completed: %d successful edge swaps executed.", successful_swaps)
-
-    sorted_edges = sorted(edges)
-    new_edge_index = torch.tensor(sorted_edges, dtype=torch.long).t().contiguous()
+    for edges in groups.values():
+        edge_set = set(edges)
+        m = len(edges)
+        if m >= 2:
+            for _ in range(int(m * config.n_swaps_factor)):
+                i, j = rng.sample(range(m), 2)
+                u, v = edges[i]
+                x, y = edges[j]
+                if rng.random() < 0.5:
+                    x, y = y, x
+                if len({u, v, x, y}) != 4:
+                    continue
+                a, b = tuple(sorted((u, y))), tuple(sorted((x, v)))
+                if a in edge_set or b in edge_set:
+                    continue
+                edge_set.remove(edges[i])
+                edge_set.remove(edges[j])
+                edge_set.update((a, b))
+                edges[i], edges[j] = a, b
+                successful_swaps += 1
+        for u, v in edge_set:
+            rewired.update(((u, v), (v, u)))
+    logger.info("Undirected rewiring: %d successful pair swaps", successful_swaps)
+    new_edge_index = torch.tensor(sorted(rewired), dtype=torch.long).reshape(-1, 2).t().contiguous()
 
     manifest = GraphManifest(
         graph_name=graph_name,
