@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this benchmark, protocol, or code in your research, please cite it as below."
 title: "spatial-graph-bench: A Rigorous Inductive-Benefit Benchmark for Spatial Graph Neural Networks in Cell-Type Annotation"
-version: 0.3.0
+version: 0.3.1
 date-released: 2026-10-26
 authors:
   - family-names: "Nalakath"

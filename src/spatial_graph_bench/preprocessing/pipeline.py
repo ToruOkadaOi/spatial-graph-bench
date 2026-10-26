@@ -12,6 +12,7 @@ from spatial_graph_bench.config.preprocessing import (
     PreprocessingConfig,
     PreprocessingPipelineVersion,
 )
+from spatial_graph_bench.preprocessing.fitted import FittedPreprocessor
 from spatial_graph_bench.preprocessing.schema import FeatureManifest, PreprocessedBundle
 from spatial_graph_bench.splitting.schema import SplitDefinition
 from spatial_graph_bench.utils.hashing import hash_array, hash_dict
@@ -28,6 +29,7 @@ def run_feature_pipeline(
     config: PreprocessingConfig,
     label_col: str = "cell_type",
     section_col: str = "section_id",
+    feature_names: list[str] | None = None,
 ) -> PreprocessedBundle:
     """Run frozen feature pipeline fit strictly on the training partition."""
     logger.info("Running feature pipeline version: %s", config.version.value)
@@ -40,6 +42,14 @@ def run_feature_pipeline(
     test_idx = [cell_to_idx[cid] for cid in split.test_cell_ids if cid in cell_to_idx]
 
     X_all = X_counts.tocsr() if sparse.issparse(X_counts) else sparse.csr_matrix(X_counts)
+    if feature_names is None:
+        feature_names = [f"feature_{i}" for i in range(X_all.shape[1])]
+    else:
+        feature_names = [str(name) for name in feature_names]
+    if len(feature_names) != X_all.shape[1] or len(set(feature_names)) != len(feature_names):
+        raise ValueError("feature_names must uniquely identify every input matrix column")
+    selected_feature_idx = np.arange(X_all.shape[1], dtype=np.int64)
+    scaler_mean = scaler_scale = None
 
     # 1. Pipeline Version A (Strict log-normalization -> PCA, fit on train only)
     if config.version == PreprocessingPipelineVersion.STRICT_A:
@@ -79,6 +89,7 @@ def run_feature_pipeline(
             mean = np.asarray(X_train_norm.mean(axis=0)).ravel()
             gene_var = mean_sq - mean**2
             top_hvg_idx = np.sort(np.argsort(gene_var)[-config.n_hvg :])
+            selected_feature_idx = top_hvg_idx
             X_train_norm = X_train_norm[:, top_hvg_idx]
             X_val_norm = X_val_norm[:, top_hvg_idx]
             X_test_norm = X_test_norm[:, top_hvg_idx]
@@ -100,6 +111,9 @@ def run_feature_pipeline(
         X_pca_train = pca.fit_transform(X_tr_scaled)
         X_pca_val = pca.transform(X_va_scaled)
         X_pca_test = pca.transform(X_te_scaled)
+        scaler_mean = scaler.mean_ if config.scale_features else None
+        scaler_scale = scaler.scale_ if config.scale_features else None
+        normalize_library_size = True
     else:
         # Platform default Version B
         if config.n_hvg is not None and config.n_hvg < X_all.shape[1]:
@@ -114,6 +128,7 @@ def run_feature_pipeline(
             mean = np.asarray(X_tr_raw.mean(axis=0)).ravel()
             gene_var = mean_sq - mean**2
             top_hvg_idx = np.sort(np.argsort(gene_var)[-config.n_hvg :])
+            selected_feature_idx = top_hvg_idx
             X_all = X_all[:, top_hvg_idx]
 
         X_dense = X_all.toarray()
@@ -121,6 +136,7 @@ def run_feature_pipeline(
         X_pca_train = pca.fit_transform(X_dense[train_idx])
         X_pca_val = pca.transform(X_dense[val_idx])
         X_pca_test = pca.transform(X_dense[test_idx])
+        normalize_library_size = False
 
     # Spatial coordinates
     coords_train = spatial_coords[train_idx]
@@ -201,6 +217,33 @@ def run_feature_pipeline(
         content_hashes=content_hashes,
     )
 
+    fitted_preprocessor = FittedPreprocessor(
+        input_feature_names=feature_names,
+        selected_feature_indices=selected_feature_idx,
+        normalize_library_size=normalize_library_size,
+        target_sum=config.target_sum,
+        scale_features=config.scale_features
+        if config.version == PreprocessingPipelineVersion.STRICT_A
+        else False,
+        scaler_mean=scaler_mean,
+        scaler_scale=scaler_scale,
+        pca_mean=pca.mean_,
+        pca_components=pca.components_,
+        pipeline_version=config.version.value,
+    )
+    for part, idx, expected in (
+        ("train", train_idx, X_pca_train),
+        ("val", val_idx, X_pca_val),
+        ("test", test_idx, X_pca_test),
+    ):
+        reconstructed = fitted_preprocessor.transform(X_all[idx], feature_names)
+        if part != "train" and not np.array_equal(reconstructed, expected):
+            max_abs_diff = float(np.max(np.abs(reconstructed - expected)))
+            raise RuntimeError(
+                f"Saved fitted preprocessor does not exactly reproduce {part} PCA features; "
+                f"max absolute difference={max_abs_diff:.3e}"
+            )
+
     return PreprocessedBundle(
         X_pca_train=X_pca_train,
         X_pca_val=X_pca_val,
@@ -219,4 +262,5 @@ def run_feature_pipeline(
         section_ids_train=sec_train,
         section_ids_val=sec_val,
         section_ids_test=sec_test,
+        fitted_preprocessor=fitted_preprocessor,
     )

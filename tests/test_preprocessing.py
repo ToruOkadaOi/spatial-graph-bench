@@ -50,6 +50,7 @@ def test_preprocessing_and_spatial_ignorance_audit(tmp_path):
         version=PreprocessingPipelineVersion.STRICT_A,
         n_pca_components=5,
     )
+    feature_names = [f"gene_{i}" for i in range(n_genes)]
 
     bundle = run_feature_pipeline(
         X_counts=X_counts,
@@ -57,6 +58,7 @@ def test_preprocessing_and_spatial_ignorance_audit(tmp_path):
         spatial_coords=spatial_coords,
         split=split,
         config=prep_cfg,
+        feature_names=feature_names,
     )
 
     assert bundle.X_pca_train.shape == (15, 5)
@@ -66,6 +68,11 @@ def test_preprocessing_and_spatial_ignorance_audit(tmp_path):
     bundle.save(tmp_path)
     loaded = PreprocessedBundle.load(tmp_path)
     np.testing.assert_array_equal(loaded.X_pca_train, bundle.X_pca_train)
+    train_indices = [obs.index.get_loc(cell_id) for cell_id in split.train_cell_ids]
+    np.testing.assert_array_equal(
+        loaded.fitted_preprocessor.transform(X_counts[train_indices], feature_names),
+        loaded.X_pca_train,
+    )
     corrupted = loaded.X_pca_train.copy()
     corrupted[0, 0] += 1
     np.save(tmp_path / "X_pca_train.npy", corrupted)

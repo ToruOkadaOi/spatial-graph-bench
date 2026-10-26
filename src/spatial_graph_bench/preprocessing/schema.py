@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
+from spatial_graph_bench.preprocessing.fitted import FittedPreprocessor
 from spatial_graph_bench.utils.hashing import hash_array, hash_dict
 
 
@@ -71,6 +72,7 @@ class PreprocessedBundle:
         section_ids_train: list[str] | None = None,
         section_ids_val: list[str] | None = None,
         section_ids_test: list[str] | None = None,
+        fitted_preprocessor: FittedPreprocessor | None = None,
     ) -> None:
         self.X_pca_train = np.ascontiguousarray(X_pca_train, dtype=np.float32)
         self.X_pca_val = np.ascontiguousarray(X_pca_val, dtype=np.float32)
@@ -94,6 +96,7 @@ class PreprocessedBundle:
         self.section_ids_train = section_ids_train or ["unknown"] * len(train_cell_ids)
         self.section_ids_val = section_ids_val or ["unknown"] * len(val_cell_ids)
         self.section_ids_test = section_ids_test or ["unknown"] * len(test_cell_ids)
+        self.fitted_preprocessor = fitted_preprocessor
 
     def save(self, out_dir: Path | str) -> None:
         d = Path(out_dir)
@@ -135,6 +138,8 @@ class PreprocessedBundle:
             self.manifest.model_dump_json(indent=2),
             encoding="utf-8",
         )
+        if self.fitted_preprocessor is not None:
+            self.fitted_preprocessor.save(d)
 
     @classmethod
     def load(cls, in_dir: Path | str) -> PreprocessedBundle:
@@ -163,7 +168,12 @@ class PreprocessedBundle:
             section_ids_train=cell_ids_data.get("sections_train"),
             section_ids_val=cell_ids_data.get("sections_val"),
             section_ids_test=cell_ids_data.get("sections_test"),
+            fitted_preprocessor=None,
         )
+        if (d / "preprocessing_model.json").is_file():
+            from spatial_graph_bench.preprocessing.fitted import FittedPreprocessor
+
+            bundle.fitted_preprocessor = FittedPreprocessor.load(d)
         mismatches = []
         for part in ("train", "val", "test"):
             x = getattr(bundle, f"X_pca_{part}")

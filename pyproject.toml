@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "spatial-graph-bench"
-version = "0.1.0"
+version = "0.3.1"
 description = "A research-grade benchmark evaluating whether spatial graphs provide an inductive benefit over tuned baselines in spatial transcriptomics"
 readme = "README.md"
 requires-python = ">=3.11"

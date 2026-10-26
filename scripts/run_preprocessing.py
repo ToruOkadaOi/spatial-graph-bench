@@ -75,6 +75,7 @@ def process_merfish_features(split_id: str = "mouse_held_out_canonical") -> None
         config=config_a,
         label_col="MERFISH cell type annotation",
         section_col="Section ID",
+        feature_names=list(adata_sub.var_names.astype(str)),
     )
 
     out_dir_a = paths.dataset_preprocessed_dir("merfish_mouse_spinal_cord", split_id)
@@ -170,6 +171,7 @@ def process_stereoseq_features(split_id: str = "replicate_held_out_canonical") -
         config=config_a,
         label_col="Annotation",
         section_col="slice",
+        feature_names=common_genes,
     )
 
     out_dir_a = paths.dataset_preprocessed_dir("stereoseq_axolotl_telencephalon", split_id)
@@ -238,6 +240,7 @@ def process_openst_features(split_id: str = "section_held_out_canonical") -> Non
         config=config_a,
         label_col="annotation",
         section_col="section_str",
+        feature_names=list(a.var_names.astype(str)),
     )
 
     out_dir_a = paths.dataset_preprocessed_dir("openst_human_lymph_node", split_id)
@@ -306,6 +309,7 @@ def process_xenium_features(split_id: str = "replicate_held_out_canonical") -> N
         config=config_a,
         label_col="celltype_plot",
         section_col="section_str",
+        feature_names=list(a.raw.var_names.astype(str)),
     )
 
     out_dir_a = paths.dataset_preprocessed_dir("xenium_mouse_kidney", split_id)
