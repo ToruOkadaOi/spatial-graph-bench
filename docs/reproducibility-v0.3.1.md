@@ -1,5 +1,7 @@
 # Reproducing the corrected v0.3.0 benchmark
 
+**Follow-up:** Stereo-seq raw-to-PCA reconstruction was resolved in the v0.3.2 follow-up. See [reproducibility-v0.3.2.md](reproducibility-v0.3.2.md) and its four-dataset fitted-preprocessor supplement. The notes below describe the original v0.3.1 supplement state.
+
 ## Frozen release artifacts
 
 The v0.3.0 code release is archived at [Zenodo DOI 10.5281/zenodo.23661930](https://doi.org/10.5281/zenodo.23661930). The corrected inputs, graph bundles, model weights, predictions, metrics, and manifests are distributed as separate release archives. Verify each downloaded file against `inductive_v3_release.SHA256SUMS` before use.

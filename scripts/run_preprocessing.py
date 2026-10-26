@@ -144,7 +144,10 @@ def process_stereoseq_features(split_id: str = "replicate_held_out_canonical") -
     config_a = PreprocessingConfig(
         version=PreprocessingPipelineVersion.STRICT_A,
         n_pca_components=50,
-        n_hvg=min(2000, len(common_genes)),
+        # The released Stereo-seq PCA features used the complete shared gene
+        # panel. Keep all common genes here; the 2k-HVG behavior was introduced
+        # later and does not reproduce the frozen Stereo-seq arrays.
+        n_hvg=len(common_genes),
     )
 
     logger.info("Executing mandatory coordinate-shuffle test for Version A...")
