@@ -1,5 +1,7 @@
 # spatial-graph-bench
 
+<p align="right"><a href="https://doi.org/10.5281/zenodo.23662784"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.23662784.svg" alt="DOI: 10.5281/zenodo.23662784"></a></p>
+
 > **Q**: Does message passing over cell–cell spatial graphs improve (task: cell-type classification) over strong non-spatial baselines trained on identical features?
 
 ---
@@ -19,13 +21,15 @@ evaluated under paired superiority/inferiority tests and Two One-Sided Tests (TO
 
 ## 2. Findings
 
-Across 4 spatial transcriptomics platforms (1,164 benchmark runs, 10 random seeds):
+Across 4 spatial transcriptomics datasets (1,164 benchmark runs, 10 random seeds):
 
-1. Across 112 matched comparisons, 78 show negative lift and 34 are parity after global adjustment. None shows a statistically supported positive lift.
-2. For physical spatial k-NN graphs alone, 20 of 32 comparisons show negative lift and 12 are parity.
-3. In fine-grained cellular mixtures (MERFISH adult mouse spinal cord), all four architectures show negative lift on the physical k=12 graph; GraphSAGE is 2.2 percentage points below the MLP.
-4. Across sharp histological boundaries (Open-ST metastatic carcinoma), GCN, GAT, and GIN show negative lift of 6.3–7.3 percentage points on the physical k=12 graph. GraphSAGE is near the MLP baseline and is classified as parity.
-5. In structurally imbalanced tissues (10x Xenium mouse kidney), GCN, GAT, and GIN show negative lift of 33.2–39.4 percentage points on the ShamL → ShamR split. GraphSAGE performs much closer to the MLP and is classified as parity. Expression-space bipartite reference graphs do not show statistically supported positive lift under the global analysis.
+1. Cell–cell graphs show no statistically supported positive lift over the MLP baseline across 112 matched comparisons. After global adjustment, 78 show negative lift and 34 are classified as parity. For physical spatial k-NN graphs alone, 20 of 32 comparisons show negative lift and 12 are parity.
+2. In fine-grained cellular mixtures (MERFISH adult mouse spinal cord), all four architectures show negative lift on the physical k=12 graph. GraphSAGE falls 2.2 percentage points below the MLP baseline.
+3. Across sharp histological boundaries (Open-ST metastatic carcinoma), GCN, GAT, and GIN show negative lift of 6.3–7.3 percentage points on the physical k=12 graph. GraphSAGE remains close to the MLP baseline and is classified as parity.
+4. In structurally imbalanced tissues (10x Xenium mouse kidney), spatial message passing shows large performance losses: GCN, GAT, and GIN fall 33.2–39.4 percentage points below the MLP on the ShamL → ShamR split. GraphSAGE limits the loss and is classified as parity.
+5. Connecting cells to reference cells in gene-expression space does not establish positive lift over the MLP under the global analysis.
+
+Parity denotes no statistically resolved positive or negative lift, rather than demonstrated equivalence.
 
 ---
 
