@@ -50,6 +50,19 @@ def test_pilot_skip_export_and_tamper_detection(tmp_path, monkeypatch):
     with tarfile.open(archive) as tar:
         tar.extractall(received, filter="data")
     verify_results(received / "results", inputs)
+    summary_path = received / "results/summary.json"
+    original_summary_hash = hash_file(summary_path)
+    paired_tests = runner.paired_tests
+
+    def platform_rounding(lifts, epsilon):
+        values = paired_tests(lifts, epsilon)
+        values["ci_90_high"] += 1e-15
+        return values
+
+    with monkeypatch.context() as patch:
+        patch.setattr(runner, "paired_tests", platform_rounding)
+        verify_results(received / "results", inputs)
+    assert hash_file(summary_path) == original_summary_hash
     summary = json.loads((received / "results/summary.json").read_text())
     assert summary["complete_grid"] is False
     assert all(r["decision"].startswith("DESCRIPTIVE") for r in summary["comparisons"])

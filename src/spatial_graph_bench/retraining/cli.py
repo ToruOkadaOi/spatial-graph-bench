@@ -116,7 +116,27 @@ def verify_results(root, inputs):
         ):
             raise ValueError("Selected checkpoint validation score mismatch")
     print("Independently recomputed all returned train/val/test metrics from frozen labels")
-    summarize(root)
+    saved_summary = json.loads((root / "summary.json").read_text())
+    recomputed_summary = summarize(root, write=False)
+    if saved_summary.keys() != recomputed_summary.keys():
+        raise ValueError("Returned summary fields differ from recomputed summary")
+    if saved_summary["complete_grid"] != recomputed_summary["complete_grid"]:
+        raise ValueError("Returned full-grid status differs from recomputed summary")
+    saved_rows = saved_summary["comparisons"]
+    computed_rows = recomputed_summary["comparisons"]
+    if len(saved_rows) != len(computed_rows):
+        raise ValueError("Returned comparison count differs from recomputed summary")
+    for saved, computed in zip(saved_rows, computed_rows, strict=True):
+        if saved.keys() != computed.keys():
+            raise ValueError("Returned comparison fields differ from recomputed summary")
+        for key, value in computed.items():
+            reported = saved[key]
+            if isinstance(value, float):
+                if not np.isclose(value, reported, rtol=1e-10, atol=1e-12):
+                    raise ValueError(f"Returned summary value differs: {key}")
+            elif value != reported:
+                raise ValueError(f"Returned summary value differs: {key}")
+    print("Verified returned inference summary without modifying archived files")
 
 
 def main():

@@ -170,7 +170,7 @@ def _run_sweep(
     )
 
 
-def summarize(results: Path):
+def summarize(results: Path, *, write: bool = True):
     plan = json.loads((results / "experiment.json").read_text())
     export = (
         json.loads((results / "export_manifest.json").read_text())
@@ -246,12 +246,12 @@ def summarize(results: Path):
     else:
         for row in records:
             row["decision"] = "DESCRIPTIVE ONLY — incomplete full grid"
-    (results / "summary.json").write_text(
-        json.dumps({"complete_grid": complete, "comparisons": records}, indent=2) + "\n"
-    )
-    pd.DataFrame(records).to_csv(results / "summary.csv", index=False)
+    summary = {"complete_grid": complete, "comparisons": records}
+    if write:
+        (results / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+        pd.DataFrame(records).to_csv(results / "summary.csv", index=False)
     print(f"Summarized {len(records)} comparisons; full-grid inference={complete}")
-    return records
+    return summary
 
 
 def run_sweep(inputs, results, *args, **kwargs):
