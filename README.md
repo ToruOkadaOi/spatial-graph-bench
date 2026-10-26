@@ -10,46 +10,48 @@ A graph architecture $M$ provides inductive benefit over cellular gene expressio
 
 $$\text{Macro-F1}(M) > \text{Macro-F1}(\text{MLP}) + \epsilon, \quad \text{where } \epsilon = \max(0.005, 2\sigma_{\text{MLP}})$$
 
-evaluated under superiority/inferiority tests and Two One-Sided Tests (TOST), with Holm-Bonferroni FWER control ($\alpha = 0.05$).
+evaluated under paired superiority/inferiority tests and Two One-Sided Tests (TOST), with Holm-Bonferroni FWER control ($\alpha = 0.05$). The corrected sweep applies this correction across all 336 hypotheses (three tests for each of 112 matched model/graph/dataset comparisons).
 
-- If $|\Delta| \le \epsilon$, the model falls within the pre-registered empirical parity band (equal to twice the MLP's own standard deviation $\sigma$ across 10 seed runs).
-- If $\Delta < -\epsilon$, message passing degrades classification accuracy.
+- A positive lift is reported when the paired superiority test supports $\Delta > \epsilon$ after correction; a negative lift when the paired inferiority test supports $\Delta < -\epsilon$.
+- Parity is reported when neither positive nor negative lift is established after correction. It means no resolved lift in this analysis; it does not claim formal equivalence unless TOST supports equivalence within the band.
 
 ---
 
 ## 2. Findings
 
-Across 4 spatial transcriptomics platforms (1,164 benchmark runs, 10 random seeds):
+Across 4 spatial transcriptomics platforms (1,164 corrected benchmark runs, 10 random seeds):
 
-1. Cell–cell spatial graphs exceed the empirical parity band in only 1 of 4 biological contexts (Stereo-seq developing axolotl brain, +3.8 percentage points; statistical verdict inconclusive).
-2. In fine-grained cellular mixtures (MERFISH adult mouse spinal cord), spatial graphs fall below the empirical parity band relative to MLP baseline (−2.5 percentage points for GraphSAGE k=12).
-3. Across sharp histological boundaries (Open-ST metastatic carcinoma), isotropic neighbor-averaging shows negative lift of 6.4–7.3 percentage points.
-4. In structurally imbalanced tissues (10x Xenium mouse kidney), spatial message passing shows catastrophic performance loss, with negative lift ranging −33.0 to −39.2 percentage points across GCN, GAT, and GIN on the ShamL → ShamR split.
-5. Physical spatial k-NN graphs fail to provide lift in MERFISH and Xenium, but non-physical expression-space bipartite reference graphs help in both cases. Perfomance restored to 0.5640 in MERFISH (+0.0367 lift) and 0.7560 in Xenium (within the empirical parity band, recovering from a −37.9 percentage-point collapse).
+1. Across 112 matched comparisons, 78 show negative lift and 34 are parity after the global correction. None shows a statistically supported positive lift.
+2. For physical spatial k-NN graphs alone, 20 of 32 comparisons show negative lift and 12 are parity.
+3. In fine-grained cellular mixtures (MERFISH adult mouse spinal cord), all four architectures show negative lift on the physical k=12 graph; GraphSAGE is 2.2 percentage points below the MLP.
+4. Across sharp histological boundaries (Open-ST metastatic carcinoma), GCN, GAT, and GIN show negative lift of 6.3–7.3 percentage points on the physical k=12 graph. GraphSAGE is near the MLP baseline and is classified as parity.
+5. In structurally imbalanced tissues (10x Xenium mouse kidney), GCN, GAT, and GIN show negative lift of 33.2–39.4 percentage points on the ShamL → ShamR split. GraphSAGE performs much closer to the MLP and is classified as parity. Expression-space bipartite reference graphs do not show statistically supported positive lift under the corrected analysis.
 
 ---
 
 ## 3. Benchmark Results
 
-All neural models evaluated across $N=10$ independent random seeds (42–51) on frozen 50-dimensional PCA features under stage/animal/section/replicate held-out evaluation.
+All neural models evaluated across $N=10$ independent random seeds (42–51) on the same frozen 50-dimensional PCA features under stage/animal/section/replicate held-out evaluation. The GNNs were retrained with train-only optimization and post-update validation checkpoint selection; test labels were not used for model selection. Test macro-F1 uses labels shared between the training and held-out partitions.
 
-| Platform & Dataset | Biological Context | Evaluated Test Cells (Classes) | Spatially Ignorant MLP Macro-F1 | Parity Band ($\pm \epsilon$) | Best Spatial GNN Architecture | Best GNN Macro-F1 | Matched Lift ($\Delta$) | Empirical Verdict |
+| Platform & Dataset | Biological Context | Evaluated Test Cells (Classes) | Spatially Ignorant MLP Macro-F1 | Parity Band ($\pm \epsilon$) | Spatial GNN | GNN Macro-F1 | Matched Lift ($\Delta$) | Empirical Verdict |
 |:---|:---|:---:|:---:|:---:|:---|:---:|:---:|:---:|
-| **Stereo-seq**<br>`axolotl_telencephalon` | Developing brain<br>*(Stage held-out)* | 4,209 (15) | $0.7282 \pm 0.0140$ | $\pm 0.0280$ | GraphSAGE ($k=12$) | $0.7665 \pm 0.0106$ | $\mathbf{+0.0383 \pm 0.0230}$<br>*(peak $+0.0702$)* | **Inconclusive** |
-| **MERFISH**<br>`mouse_spinal_cord` | Adult spinal cord<br>*(Animal held-out)* | 8,507 (60) | $0.5273 \pm 0.0035$ | $\pm 0.0069$ | GraphSAGE ($k=12$) | $0.5020 \pm 0.0068$ | $-0.0253 \pm 0.0082$ | **Negative Lift** |
-| **Open-ST**<br>`human_lymph_node` | Metastatic carcinoma<br>*(Section held-out)* | 34,072 (14) | $0.3946 \pm 0.0027$ | $\pm 0.0054$ | GraphSAGE ($k=12$) | $0.3962 \pm 0.0102$ | $+0.0016 \pm 0.0092$ | **Inconclusive** |
-| **10x Xenium**<br>`mouse_kidney` | Sham adult kidney<br>*(Replicate held-out)* | 85,880 (20) | $0.7635 \pm 0.0120$ | $\pm 0.0241$ | GraphSAGE ($k=12$) | $0.7514 \pm 0.0139$ | $-0.0121 \pm 0.0213$ | **Inconclusive** |
+| **Stereo-seq**<br>`axolotl_telencephalon` | Developing brain<br>*(Stage held-out)* | 4,209 (15) | $0.7286 \pm 0.0106$ | $\pm 0.0212$ | GraphSAGE ($k=12$) | $0.7446 \pm 0.0184$ | $\mathbf{+0.0160 \pm 0.0214}$ | **Parity** |
+| **MERFISH**<br>`mouse_spinal_cord` | Adult spinal cord<br>*(Animal held-out)* | 8,507 (60) | $0.5285 \pm 0.0023$ | $\pm 0.0050$ | GraphSAGE ($k=12$) | $0.5061 \pm 0.0049$ | $-0.0224 \pm 0.0049$ | **Negative Lift** |
+| **Open-ST**<br>`human_lymph_node` | Metastatic carcinoma<br>*(Section held-out)* | 34,072 (14) | $0.3942 \pm 0.0032$ | $\pm 0.0064$ | GraphSAGE ($k=12$) | $0.3959 \pm 0.0067$ | $+0.0017 \pm 0.0066$ | **Parity** |
+| **10x Xenium**<br>`mouse_kidney` | Sham adult kidney<br>*(Replicate held-out)* | 85,880 (20) | $0.7680 \pm 0.0036$ | $\pm 0.0072$ | GraphSAGE ($k=12$) | $0.7576 \pm 0.0077$ | $-0.0104 \pm 0.0078$ | **Parity** |
+
+Model scores show mean $\pm$ standard deviation across seeds. Matched lift is paired by seed. Verdicts use the global 336-hypothesis Holm correction.
 
 ### Architectural Comparison on Canonical Spatial Graph ($k=12$)
 
 | Platform & Dataset | Spatially Ignorant MLP Baseline | GCN ($k=12$) | GAT ($k=12$) | GIN ($k=12$) | GraphSAGE ($k=12$) | Architectural Finding |
 |:---|:---:|:---:|:---:|:---:|:---:|:---|
-| **Stereo-seq**<br>*(Axolotl Brain)* | $0.7282 \pm 0.0140$ | $0.7198$ ($-0.0084$) | $0.7145$ ($-0.0136$) | $0.6590$ ($-0.0692$) | $\mathbf{0.7665}$ ($\mathbf{+0.0383}$) | **GraphSAGE provides sole positive mean lift**; GCN/GAT stay within the empirical parity band. |
-| **MERFISH**<br>*(Mouse Spinal Cord)* | $0.5273 \pm 0.0035$ | $0.1577$ ($-0.3696$) | $0.1810$ ($-0.3462$) | $0.1587$ ($-0.3686$) | $\mathbf{0.5020}$ ($\mathbf{-0.0253}$) | **Isotropic GNNs collapse by $-35\%$ to $-37\%$**; GraphSAGE reduces the loss to 2.5 percentage points. |
-| **Open-ST**<br>*(Human Lymph Node)* | $0.3946 \pm 0.0027$ | $0.3216$ ($-0.0730$) | $0.3257$ ($-0.0689$) | $0.3303$ ($-0.0643$) | $\mathbf{0.3962}$ ($\mathbf{+0.0016}$) | **Isotropic GNNs lose 6–7 percentage points**; GraphSAGE remains within the empirical parity band. |
-| **10x Xenium**<br>*(Mouse Kidney)* | $0.7635 \pm 0.0120$ | $0.3711$ ($-0.3925$) | $0.4338$ ($-0.3297$) | $0.3846$ ($-0.3789$) | $\mathbf{0.7514}$ ($\mathbf{-0.0121}$) | **Catastrophic $-33\%$ to $-39\%$ collapse under GCN/GAT/GIN**; GraphSAGE recovers most of the loss. |
+| **Stereo-seq**<br>*(Axolotl Brain)* | $0.7286$ | $0.6887$ ($-0.0398$) | $0.6652$ ($-0.0633$) | $0.6983$ ($-0.0302$) | $\mathbf{0.7446}$ ($\mathbf{+0.0160}$) | **GraphSAGE has the highest mean**, but every architecture is parity after global correction. |
+| **MERFISH**<br>*(Mouse Spinal Cord)* | $0.5285$ | $0.1621$ ($-0.3664$) | $0.1845$ ($-0.3440$) | $0.1615$ ($-0.3670$) | $\mathbf{0.5061}$ ($\mathbf{-0.0224}$) | **All four architectures show negative lift.** |
+| **Open-ST**<br>*(Human Lymph Node)* | $0.3942$ | $0.3302$ ($-0.0639$) | $0.3215$ ($-0.0727$) | $0.3309$ ($-0.0632$) | $\mathbf{0.3959}$ ($\mathbf{+0.0017}$) | **GCN/GAT/GIN show negative lift**; GraphSAGE is parity. |
+| **10x Xenium**<br>*(Mouse Kidney)* | $0.7680$ | $0.3795$ ($-0.3885$) | $0.4361$ ($-0.3319$) | $0.3744$ ($-0.3936$) | $\mathbf{0.7576}$ ($\mathbf{-0.0104}$) | **GCN/GAT/GIN show large negative lift**; GraphSAGE is parity. |
 
-Complete statistical tables, CI, and run details: [docs/results-synthesis.md](docs/results-synthesis.md) and [results/reports/table_benchmark_synthesis.md](results/reports/table_benchmark_synthesis.md).
+The corrected sweep contains 112 matched comparisons across four datasets, four architectures, and seven graph conditions. Full run instructions: [docs/RETRAINING.md](docs/RETRAINING.md). Raw-to-PCA reproduction: [docs/reproducibility-v0.3.2.md](docs/reproducibility-v0.3.2.md).
 
 ---
 
@@ -57,35 +59,35 @@ Complete statistical tables, CI, and run details: [docs/results-synthesis.md](do
 
 #### 1. Which graph designs helped?
 
-- A moderate K number of neighbors (12 instead of 6), in tissues where neighboring cells really do share the same type. In those cases, wider neighborhoods filter out noise more effectively.
--  Connecting cells to a reference set of cells in gene-expression space.
+- No tested graph design showed a statistically supported positive lift after the corrected global analysis. GraphSAGE on the Stereo-seq physical k=12 graph had the highest mean lift (+1.6 percentage points), but is classified as parity.
+- Connecting cells to a reference set in gene-expression space produced positive mean lifts in some MERFISH runs, but none passed the corrected positive-lift criterion.
 
 #### 2. Why aren't simple physical-neighbor graphs good enough, and what would work better?
 
-Spatial graphs have three problems:
+Possible limitations to test include:
 
-- They connect cells that are physically close even if there is biological separation
-- They force every cell to have the same number of neighbors, even when real tissue density might be different; 
-- Cells near the tissue's outer edge only have neighbors on one side, which skews their results.
+- They can connect cells that are physically close even if there is biological separation.
+- They may force every cell to have the same number of neighbors, even when real tissue density might be different.
+- Cells near the tissue's outer edge have neighbors on one side only; whether this skews their results remains to be tested.
 
 ***Yes there are/should be better approaches!*** [see end]
 
-#### 3. Why did connecting cells by gene expression (as opp. to physical location) work better?
+#### 3. Would connecting cells by gene expression (as opp. to physical location) work better?
 
-- No cross-boundary mixing. A cell only connects to reference cells of similar type, regardless of what's physically next to it in the tissue.
-- Pushing to an average version of its true type reduces the noise
-- Physical damage in the tissue  doesn't affect the underlying gene expression
+- This remains a direction to explore; the corrected benchmark did not establish a positive lift for expression-space reference graphs.
+- A hypothesis is that expression-similar references could reduce cross-boundary mixing, regardless of physical proximity.
+- Physical damage in the tissue may affect location more than the underlying gene expression.
 
 #### 4. Why do some GNN types collapse in mixed-neighbor tissue, while others don't?
 
-Averaging (GCN, GIN, and GAT's weighted sum) mixes self and neighbors into one shared signal before transformation, so self can get overwhelmed when neighbors are misleading.  This causes macro-F1 drops (in my case down 35–39 percentage points in two datasets).
+In MERFISH and Xenium, GCN, GAT, and GIN show drops of roughly 33–39 percentage points on the physical k=12 graph. One possible explanation is that neighborhood aggregation mixes in misleading cells; this remains a hypothesis about why these models performed poorly here.
 
-GraphSAGE keeps separate transformations for the cell itself and its neighbors, giving a "skip-connection" for the cell’s own signal
+GraphSAGE performed better than the other GNNs in those settings; the corrected verdict is parity for Xenium and negative for MERFISH.
 #### 5. Misc: Do cells near tissue boundaries perform worse than cells in the interior?
 
-Across all the datasets tested (boundary-margin macro-F1 was lower than interior macro-F1 for GraphSAGE k=12)
+This was not evaluated in the corrected sweep and remains an open question.
 
-- Leaving aside sample prep. related artifacts, cells near the outer edge of a tissue sample simply have fewer neighbors to draw on, since there's nothing beyond the boundary
+- One possibility is that cells near the outer edge have fewer neighbors to draw on, since there's nothing beyond the boundary.
 
 ---
 
@@ -95,8 +97,8 @@ All benchmarks enforce four controlled experimental variables:
 
 - **Zero cross-partition edges**: Strict donor- and section-held-out splits with section-own subgraphs; test-time message passing operates strictly on internal spatial coordinates within held-out tissue slices (zero cross-section or cross-partition edges).
 - **Identical fixed features with audited spatial ignorance**: Random Forest, MLP, and all GNNs evaluate on identical 50-dimensional Principal Components fitted strictly on training gene expression. Coordinate-shuffle audits verify zero spatial leakage into features ($\max |\Delta| = 0.0 \le 10^{-6}$).
-- **Controlled model comparison**: Standard inductive GNN architectures (GCN, GraphSAGE, GAT, GIN) evaluated against a regularized non-spatial MLP on identical train/val/test partitions across 10 random seeds (42–51).
-- **Topological negative controls**: Directed degree-preserving edge rewiring and coordinate shuffling benchmarked across every condition to verify models respond to authentic tissue topology rather than unspecific smoothing artifacts.
+- **Controlled model comparison**: Standard inductive GNN architectures (GCN, GraphSAGE, GAT, GIN) evaluated against a regularized non-spatial MLP on identical train/val/test partitions across 10 random seeds (42–51). GNN optimization uses training nodes only; checkpoint selection uses fresh post-update validation predictions.
+- **Topological negative controls**: Coordinate shuffling and undirected degree-preserving edge rewiring are performed within each partition and section and benchmarked across every condition.
 
 *see - [scgraph-bench](https://github.com/ToruOkadaOi/scgraph-bench), my [ml_gist](https://gist.github.com/ToruOkadaOi/a20725a1d13a83d6884d551f53953b20#file-mlgist-md)*
 
@@ -107,30 +109,9 @@ All benchmarks enforce four controlled experimental variables:
 <details>
 <summary><b>…</b></summary>
 
-### Turnkey Reproduction
+### Reproducing the corrected benchmark
 
-Verify environment invariants, cryptographic hashes, and regenerate all publication figures and LaTeX tables locally:
-
-```bash
-git clone https://github.com/ToruOkadaOi/spatial-graph-bench.git
-cd spatial-graph-bench
-
-# One-click reproduction pipeline
-./scripts/reproduce_all.sh
-```
-
-### Verified Release Artifacts
-
-All preprocessed input datasets and benchmark sweeps are distributed with SHA-256 checksums:
-
-| Modality | Input Release Package | Result Release Package | Test Cells | SHA-256 Status |
-|:---|:---|:---|:---:|:---:|
-| **Stereo-seq** | [`v0.1.0-stereoseq-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-stereoseq-inputs) | [`v0.2.0-stereoseq-results`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.2.0-stereoseq-results) | 4,410 | Verified PASS |
-| **MERFISH** | [`v0.1.0-merfish-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-merfish-inputs) | [`v0.2.0-merfish-results`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.2.0-merfish-results) | 8,507 | Verified PASS |
-| **Open-ST** | [`v0.1.0-openst-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-openst-inputs) | [`v0.2.0-openst-results`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.2.0-openst-results) | 34,072 | Verified PASS |
-| **10x Xenium** | [`v0.1.0-xenium-inputs`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.1.0-xenium-inputs) | [`v0.2.0-xenium-results`](https://github.com/ToruOkadaOi/spatial-graph-bench/releases/tag/v0.2.0-xenium-results) | 85,880 | Verified PASS |
-
-See [docs/results-index.md](docs/results-index.md) for full archive manifests and checksum verification instructions.
+The corrected 1,164-run sweep uses frozen PCA features, split definitions, and graph inputs. Re-run it using the setup and GPU instructions in [docs/RETRAINING.md](docs/RETRAINING.md). Rebuild raw-to-PCA features with the matching source data versions using [docs/reproducibility-v0.3.2.md](docs/reproducibility-v0.3.2.md). Release archives and checksums will be linked here when the corrected result package is published.
 
 ### Developer Environment Setup
 
@@ -148,11 +129,11 @@ uv run ruff format --check src tests scripts
 
 ### Protocol Documentation
 
-- [docs/results-synthesis.md](docs/results-synthesis.md): Comprehensive 4-modality synthesis and empirical analysis.
-- [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md): Pre-registered scientific contract and statistical decision rules.
+- [docs/RETRAINING.md](docs/RETRAINING.md): Corrected strict-inductive training protocol and run instructions.
+- [docs/reproducibility-v0.3.2.md](docs/reproducibility-v0.3.2.md): Raw-to-PCA reproduction and fitted preprocessing.
+- [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md): Study protocol and statistical decision rules.
 - [REPRODUCE.md](REPRODUCE.md): Step-by-step manual reproduction handbook.
 - [TESTING.md](TESTING.md): 4-tier testing guide (unit, invariant validators, smoke runs, delivery audits).
-- [docs/results-index.md](docs/results-index.md): Catalog of release artifacts and baseline snapshots.
 - [CITATION.md](CITATION.md): Academic citation format and BibTeX.
 - [LICENSE](LICENSE): MIT License.
 
