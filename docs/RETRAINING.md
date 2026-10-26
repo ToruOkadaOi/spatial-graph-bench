@@ -1,4 +1,4 @@
-# Corrected retraining: local CPU → Vast GPU → local analysis
+# Training workflow: local CPU → Vast GPU → local analysis
 
 All work for this workflow belongs to `fix/inductive-retraining` in the separate worktree `/Users/aman/Documents/spatial-graph-bench-retrain`. The original checkout and README remain unchanged.
 
@@ -10,7 +10,7 @@ All work for this workflow belongs to `fix/inductive-retraining` in the separate
 - Every neural epoch atomically saves model state, optimizer state, RNG states, history, selected weights and stopping state. Resume requires the same source, configuration, input bytes and environment. Completed runs are hashed and skipped; changed or incompatible files cause an error. One sweep process may own a results directory at a time.
 - Model selection, graph/control fixes and resume are regression-tested on CPU. CUDA behavior must pass the worker's smoke test; GPU bitwise determinism is not asserted.
 
-The full experiment fits 1,120 GNNs, 40 MLPs and four random forests. Fresh baselines ensure the same corrected validation policy across models. Features/PCA are reused; no raw-data preprocessing is repeated. The default command runs all fits on the instance (RF uses its CPU). An optional local-baseline path is provided below.
+The full experiment fits 1,120 GNNs, 40 MLPs and four random forests. Fresh baselines ensure a consistent validation policy across models. Features/PCA are reused; no raw-data preprocessing is repeated. The default command runs all fits on the instance (RF uses its CPU). An optional local-baseline path is provided below.
 
 ## 1. Local inputs (already prepared for this handoff)
 
@@ -24,7 +24,7 @@ uv run --frozen python scripts/retrain.py prepare \
   --archive dist/inductive_v3_inputs.tar.gz
 ```
 
-Preparation retains the original PCA/label/coordinate arrays, copies the frozen splits and existing real/reference graph edges, creates corrected manifests, and rebuilds the four controls per dataset. It refuses to overwrite an existing input directory or archive. Verify an existing handoff with:
+Preparation retains the original PCA/label/coordinate arrays, copies the frozen splits and existing real/reference graph edges, creates manifests, and rebuilds the four controls per dataset. It refuses to overwrite an existing input directory or archive. Verify an existing handoff with:
 
 ```bash
 uv run --frozen python scripts/retrain.py verify-inputs \
@@ -150,7 +150,7 @@ uv run --frozen python scripts/retrain.py verify-results \
 
 The return check independently recalculates train/validation/test metrics from the frozen labels and saved predictions.
 
-Read `returned/inductive-v3/results/summary.csv` and `summary.json`. None of these commands modifies your README or replaces historical benchmark outputs. Returned compact exports can regenerate statistics without the omitted probabilities. Copy and verify the data you want to retain before destroying the rented instance.
+Read `returned/inductive-v3/results/summary.csv` and `summary.json`. These commands leave your README and existing run outputs untouched. Returned compact exports can regenerate statistics without the omitted probabilities. Copy and verify the data you want to retain before destroying the rented instance.
 
 ## Optional: keep baseline fitting on the local CPU
 

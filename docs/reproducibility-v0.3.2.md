@@ -1,12 +1,12 @@
-# Reproducing the corrected benchmark: preprocessing follow-up
+# Reproducing benchmark preprocessing
 
-This follow-up resolves Stereo-seq raw-to-PCA reconstruction for the frozen benchmark inputs. It changes only preprocessing reproduction artifacts; the released features, model weights, predictions, and metrics are unchanged. No retraining is needed.
+This guide documents how to rebuild the frozen feature arrays from the source data, with fitted preprocessing objects for all four datasets.
 
-## What changed
+## Stereo-seq feature construction
 
-The frozen Stereo-seq features were generated from all 12,936 sorted genes shared across Stage44, Stage54, and Stage57. A later shared-pipeline change began selecting 2,000 HVGs, while the Stereo-seq runner retained that newer setting. The runner now keeps the full shared panel. This reproduces the released arrays exactly.
+The Stereo-seq features use all 12,936 sorted genes shared across Stage44, Stage54, and Stage57. The preprocessing runner retains this complete gene panel and reproduces the released arrays exactly.
 
-The frozen `feature_manifest.json` still records `n_hvg: 2000`. That value reflects the configured setting in the historical manifest; it does not describe the actual feature reduction used to create those frozen arrays. The manifest is preserved as part of the historical release record. New preprocessing output records the full-panel setting.
+The frozen `feature_manifest.json` records `n_hvg: 2000` as a pipeline setting. The PCA arrays themselves were generated from the complete 12,936-gene panel. The fitted preprocessing object and the released arrays provide the exact feature construction used for this dataset.
 
 ## Rebuild and verify
 

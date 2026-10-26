@@ -1,6 +1,6 @@
 # Source data and attribution
 
-The corrected benchmark uses these publicly accessible source datasets. This benchmark release is shared under **CC BY 4.0**. Please cite the benchmark and the relevant source record when reusing its materials.
+The benchmark uses these publicly accessible source datasets. This benchmark release is shared under **CC BY 4.0**. Please cite the benchmark and the relevant source record when reusing its materials.
 
 | Dataset | Source and reuse information |
 | --- | --- |
